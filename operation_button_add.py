@@ -72,9 +72,10 @@ class OperationButtonAdd:
 
         for db_column_name, name_input in names_addition_data.items():
             number_allowed_characters = NotesDatabaseAction.select_number_characters("notes_info", db_column_name)
-            name_label = tkinter.Label(self.root, text=name_input, bg="#F1EBD8", fg="#787D46", font=("Arial", 13, "bold"))
+            name_label = tkinter.Label(self.root, text=name_input, bg="#F1EBD8", fg="#787D46",
+                                       font=("Arial", 13, "bold"))
             name_label.place(x=position_x_name, y=position_y_name)
-            input_form = Entry(self.root, width=50, bg="#F1EBD8", fg="black", border=2, relief="flat",
+            input_form = Entry(self.root,width=50, bg="#F1EBD8", fg="black", border=2, relief="flat", state="normal",
                                highlightbackground="#787D46", insertbackground="black", selectbackground="#787D46",
                                validate="key", validatecommand=(self.root.register(character_count_check),
                                                                 "%P", number_allowed_characters))

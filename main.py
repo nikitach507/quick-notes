@@ -19,6 +19,8 @@ class QuickNotesApp:
         self.side_listbox_active_category = None
         self.created_oper_button = None
         self.created_cat_button = None
+        self.notes_display_frame = None
+        self.open_note_frame = None
         self.pop_up_buttons = {}
         self.operation_button_add = OperationButtonAdd(win, self.pop_up_buttons)
         self.operation_button_delete = OperationButtonDelete(win)
@@ -31,7 +33,7 @@ class QuickNotesApp:
               font=("Times New Romans", 20)).place(x=10, y=10)
 
         # Creating buttons to control notes
-        self.note_operation_buttons = {"create new note": self.operation_button_add.add_note_button}
+        self.note_operation_buttons = {"create new note": self.switch_add_note}
         self.x_note_buttons, y_note_buttons = 190, 29
         for caption, button_function in self.note_operation_buttons.items():
             self.create_operation_button(button_symbol=caption, button_action=button_function,
@@ -72,14 +74,12 @@ class QuickNotesApp:
         if len(all_database_categories) > 15:
             side_scrollbar_categories.pack(side=LEFT, fill=Y)
 
-        # self.category_button_action.settings_category(8, 70)
-        #
-        # add_new_category_comm = lambda x=200, y=70: self.category_button_action.settings_category(x, y)
-        # self.create_category_button(button_symbol="category settings", button_actions=add_new_category_comm,
-        #                             x_button=5, y_button=430)
-
         # Show the area where all the notes will be
         self.note_display_interface()
+
+    def switch_add_note(self):
+        self.notes_display_frame.grid_remove()
+        self.operation_button_add.add_note_button()
 
     def create_operation_button(self, button_symbol, button_action, x_button, y_button):
         operating_button_command = lambda: button_action()
@@ -90,14 +90,6 @@ class QuickNotesApp:
         if button_symbol != "create new note":
             self.pop_up_buttons[button_symbol] = self.created_oper_button
         self.created_oper_button.place(x=x_button, y=y_button)
-
-    def create_category_button(self, button_symbol, button_actions, x_button, y_button):
-        category_button_command = lambda: button_actions()
-        self.created_cat_button = Button(win, text=f"{button_symbol}", bg="#E4BA6A", activebackground="#F2D091",
-                                         font=("Georgia", 16), fg="#3C4013", activeforeground="#4C5117",
-                                         width=180, height=24, border=0, relief="flat", highlightbackground="#F2D091",
-                                         command=category_button_command)
-        self.created_cat_button.place(x=x_button, y=y_button)
 
     def on_select_side_listbox(self, event):
         # List item selection event handler
@@ -110,6 +102,8 @@ class QuickNotesApp:
                 self.active_item = item_index
                 self.update_color_side_listbox()
                 self.side_listbox_active_category = widget.get(self.active_item)
+                self.notes_display_frame.grid_remove()
+                Label(win, bg="#F1EBD8", border=4, relief="sunken").place(x=190, y=55, relwidth=1, relheight=1)
                 self.note_display_interface(self.side_listbox_active_category)
 
     def on_release_side_listbox(self, event):
@@ -166,14 +160,15 @@ class QuickNotesApp:
             note_title_legend = Label(win, text=legend_name, bg="#F1EBD8", fg="#787D46",
                                       font=("Arial", 12, "bold"), anchor="w", width=21)
             note_title_legend.place(x=legend_position[0], y=legend_position[1])
-
+        if self.open_note_frame:
+            self.open_note_frame.pack_forget()
         # Create an area to display notes
-        notes_display_frame = Frame(win)
-        notes_display_frame.grid(row=0, column=0, padx=205, pady=100)
+        self.notes_display_frame = Frame(win)
+        self.notes_display_frame.grid(row=0, column=0, padx=205, pady=100)
 
         # Create a Scrollbar and create a Canvas for this
-        notes_canvas = Canvas(notes_display_frame, width=775, height=480)
-        scrollbar_for_notes_canvas = Scrollbar(notes_display_frame, orient="vertical",
+        notes_canvas = Canvas(self.notes_display_frame, width=775, height=480)
+        scrollbar_for_notes_canvas = Scrollbar(self.notes_display_frame, orient="vertical",
                                                command=notes_canvas.yview)
         notes_canvas.configure(yscrollcommand=scrollbar_for_notes_canvas.set,
                                bg="#F1EBD8", borderwidth=0, highlightthickness=0)
@@ -229,13 +224,32 @@ class QuickNotesApp:
         for pop_up_button in self.pop_up_buttons.values():
             pop_up_button.destroy()
 
-    @staticmethod
-    def open_note_information(label):
-        for i in label:
-            print(i.cget('text'))
+    def open_note_information(self, label):
+        all_text_label = {}
+        for index, text_in_label in enumerate(label):
+            all_text_label[index] = text_in_label.cget("text")
 
         # Updating the notes interface area when categories change
+        self.notes_display_frame.grid_remove()
         Label(win, bg="#F1EBD8", border=4, relief="sunken").place(x=190, y=55, relwidth=1, relheight=1)
+
+        self.open_note_frame = Frame()
+        self.open_note_frame.pack(padx=210, pady=75, anchor="w")
+
+        name_text_area = Text(self.open_note_frame, height=3, relief="flat", border=3, width=100, bg="#F1EBD8",
+                              font=("Georgia", 20), tabs=1043, fg="black")
+        name_text_area.insert(INSERT, all_text_label[1])
+        name_text_area.pack()
+
+        # Создаем вторую область Text
+        desc_text_area = Text(self.open_note_frame, height=5, width=100,)
+        desc_text_area.insert(INSERT, all_text_label[2])
+        desc_text_area.pack()
+
+        # Создаем третью область Text
+        addit_text_area = Text(self.open_note_frame, height=3, width=100)
+        addit_text_area.insert(INSERT, all_text_label[3])
+        addit_text_area.pack()
 
 
 if __name__ == "__main__":
@@ -255,3 +269,4 @@ if __name__ == "__main__":
     app.create_interface()
 
     win.mainloop()
+
