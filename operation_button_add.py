@@ -13,7 +13,7 @@ class OperationButtonAdd:
         self.active_item = None
         self.pop_up_notes_button = pop_up_notes_button
 
-    def add_note_button(self):
+    def add_note_button(self, title_destroy):
         def saving_received_data():
             current_category = self.selected_category
             # Checks that all data is available before it is stored
@@ -46,16 +46,16 @@ class OperationButtonAdd:
                 return False
             return True
 
+        title_destroy.destroy()
         # Updating the interface area when clicking on the button
-        Label(self.root, bg="#F1EBD8", border=4, relief="sunken").place(x=190, y=55, relwidth=1, relheight=1)
-
         if len(self.pop_up_notes_button) != 0:
             for button in self.pop_up_notes_button.values():
                 button.destroy()
 
-        header_label = Label(self.root, text="ADD A NEW NOTE DATA", bg="#F1EBD8", fg="#787D46",
+        header_label = Label(self.root, text="ADD A NEW NOTE DATA", bg=QuickNotesApp.PALETTE["main"]["3color"],
+                             fg=QuickNotesApp.PALETTE["text"]["1color"],
                              font=("Arial", 15, "bold"), anchor="w")
-        header_label.place(x=220, y=80)
+        header_label.place(x=220, y=40)
 
         # Dictionary of column names to be used
         names_addition_data = {
