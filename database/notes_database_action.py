@@ -1,38 +1,38 @@
+from typing import Literal
+
 from database.database_action import *
 
 
 class NotesDatabaseAction:
-    def __init__(self, head, description, additional, name_cat):
-        self.head = head
-        self.description = description
-        self.additional = additional
-        self.name_cat = name_cat
+    def __init__(self, note_name, note_description, note_category):
+        self.note_name = note_name
+        self.note_description = note_description
+        self.note_category = note_category
 
     def add_note(self, table_name):
         connection = connect_db()
         try:
             with connection.cursor() as cursor:
-                insert_query = "INSERT INTO `%s` (head, description, additional, name_cat) " \
-                               "VALUES (%%s, %%s, %%s, %%s);" % table_name
-                cursor.execute(insert_query, (self.head, self.description, self.additional, self.name_cat))
+                insert_query = "INSERT INTO `%s` (note_name, note_description, note_category) " \
+                               "VALUES (%%s, %%s, %%s);" % table_name
+                cursor.execute(insert_query, (self.note_name, self.note_description, self.note_category))
                 connection.commit()
                 print("Adding a note was successful")
                 print("#" * 20)
         finally:
             close_db(connection)
 
-    def edit_note(self, table_name, note_id, new_head=None, new_desc=None, new_addit=None, new_cat=None):
-        if new_head is None: new_head = self.head
-        if new_desc is None: new_desc = self.description
-        if new_addit is None: new_addit = self.additional
-        if new_cat is None: new_cat = self.name_cat
+    def edit_note(self, table_name, note_id, new_name=None, new_desc=None, new_category=None):
+        if new_name is None: new_name = self.note_name
+        if new_desc is None: new_desc = self.note_description
+        if new_category is None: new_category = self.note_category
         connection = connect_db()
         try:
             with connection.cursor() as cursor:
                 update_query = "UPDATE `%s` SET " \
-                               "head = %%s, description = %%s, additional = %%s, name_cat = %%s " \
+                               "note_name = %%s, note_description = %%s, note_category = %%s " \
                                "WHERE id = %%s;" % table_name
-                cursor.execute(update_query, (new_head, new_desc, new_addit, new_cat, note_id))
+                cursor.execute(update_query, (new_name, new_desc, new_category, note_id))
                 connection.commit()
             print("Editing the note was successful")
             print("#" * 20)
@@ -66,16 +66,36 @@ class NotesDatabaseAction:
             close_db(connection)
 
     @staticmethod
-    def select_all_notes(table_name, category):
+    def select_all_notes(table_name, category, sorting: Literal["newest", "oldest", "atoz", "ztoa"]):
+        """
+            This function writes out data with sorting.
+
+            :param table_name: Name of the required table.
+            :type table_name: str
+            :param category: Name of the notes' category.
+            :type category: str
+            :param sorting: The way to sort notes.
+            :type sorting: str
+            """
+        type_sorting = {"newest": "ORDER BY created_at DESC;",
+                        "oldest": "ORDER BY created_at ASC;",
+                        "atoz": "ORDER BY note_name ASC;",
+                        "ztoa": "ORDER BY note_name DESC;"
+                        }
+        if sorting not in type_sorting:
+            raise ValueError("Аргумент должен быть ('newest', 'oldest', 'atoz', 'ztoa')")
+
         connection = connect_db()
         try:
             with connection.cursor() as cursor:
-                if category == "All notes":
-                    select_all_rows = "SELECT * FROM `%s`;" % table_name
-                    cursor.execute(select_all_rows)
-                else:
-                    select_all_rows = "SELECT * FROM `%s` WHERE name_cat = %%s;" % table_name
+
+                if category != "All notes":
+                    select_all_rows = "SELECT * FROM `%s` WHERE note_category = %%s" % table_name + type_sorting[sorting]
                     cursor.execute(select_all_rows, category)
+                else:
+                    select_all_rows = "SELECT * FROM `%s` " % table_name + type_sorting[sorting]
+                    cursor.execute(select_all_rows)
+
                 all_notes_dict = list()
                 rows = cursor.fetchall()
                 for row in rows:
