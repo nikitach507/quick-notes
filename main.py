@@ -1,6 +1,7 @@
 import logging
 import sys
 from tkinter import *
+from tkinter.ttk import Combobox
 
 from operation_button_add import *
 from operation_button_delete import *
@@ -45,6 +46,7 @@ class QuickNotesApp:
         self.created_cat_button = None
         self.notes_display_frame = None
         self.open_note_frame = None
+        self.note_sorting = "newest"
         self.pop_up_buttons = {}
         self.operation_button_add = OperationButtonAdd(win, self.pop_up_buttons)
         self.operation_button_delete = OperationButtonDelete(win)
@@ -114,7 +116,8 @@ class QuickNotesApp:
 
     def create_operation_button(self, button_symbol, button_action, x_button):
         operating_button_command = lambda: button_action()
-        self.created_oper_button = Button(self.upper_win, text=f"{button_symbol}", bg=QuickNotesApp.PALETTE["main"]["1color"],
+        self.created_oper_button = Button(self.upper_win, text=f"{button_symbol}",
+                                          bg=QuickNotesApp.PALETTE["main"]["1color"],
                                           font=("Georgia", 14), fg=QuickNotesApp.PALETTE["text"]["2color"],
                                           activebackground=QuickNotesApp.PALETTE["main"]["1color"],
                                           activeforeground=QuickNotesApp.PALETTE["text"]["1color"],
@@ -160,63 +163,85 @@ class QuickNotesApp:
                                                         fg=QuickNotesApp.PALETTE["text"]["3color"])
 
     def note_display_interface(self, note_category="All notes"):
-        def change_active_data_color(labels_list):
+
+        def change_active_data_color(labels_list, active_note, active_id):
             if len(self.pop_up_buttons) == 2:
                 for button in self.pop_up_buttons.values():
                     button.destroy()
-            delete_note_lambda = lambda note_data_label=labels_list: \
-                self.operation_button_delete.delete_note_button(note_data_label)
-            window_note_lambda = lambda note_data_label=labels_list: \
+            delete_note_lambda = lambda id=active_id, object=app: \
+                self.operation_button_delete.delete_note_button(id, object)
+            window_note_lambda = lambda note_data_label=active_note: \
                 self.operation_button_delete.open_new_window(note_data_label)
             self.create_operation_button(button_symbol="delete the note", button_action=delete_note_lambda,
                                          x_button=self.x_note_buttons)
             self.create_operation_button(button_symbol="note window", button_action=window_note_lambda,
                                          x_button=self.x_note_buttons + 130)
-            # Changing the color of the current data
-            for label in labels_list:
-                label.config(fg=QuickNotesApp.PALETTE["text"]["1color"], bg=QuickNotesApp.PALETTE["main"]["1color"])
 
             # Go around all the data on frame and change the color of all but the current one
             for child in frame_to_display.winfo_children():
                 if isinstance(child, Label):
 
-                    if child.cget('bg') == QuickNotesApp.PALETTE["main"]["1color"] and child not in labels_list and child.cget('text'):
-                        child.config(fg=QuickNotesApp.PALETTE["text"]["2color"],
-                                     bg=QuickNotesApp.PALETTE["main"]["3color"])
+                    if child.cget('bg') == QuickNotesApp.PALETTE["main"]["3color"] and child in labels_list:
+                        for label in active_note.winfo_children()[2:-1]:
+                            label.config(bg=QuickNotesApp.PALETTE["main"]["1color"])
+                        child.config(bg=QuickNotesApp.PALETTE["main"]["1color"])
+                    else:
+                        for label in child.winfo_children()[2:-1]:
+                            label.config(bg=QuickNotesApp.PALETTE["main"]["3color"])
+                        child.config(bg=QuickNotesApp.PALETTE["main"]["3color"])
 
-        # Creating names for note columns
-        note_legend_name_and_position = {
-            "HEAD": (215, 40),
-            "DESCRIPTION": (365, 40),
-            "ADDITIONAL": (643, 40),
-            "CATEGORY": (870, 40)
-        }
+        def handle_combobox(event, current_category):
+            selected = combo.current()
+            if selected == 0:
+                combo.current(0)
+                self.note_sorting = "newest"
+            elif selected == 1:
+                combo.current(1)
+                self.note_sorting = "oldest"
+            elif selected == 2:
+                combo.current(2)
+                self.note_sorting = "atoz"
+            elif selected == 3:
+                combo.current(3)
+                self.note_sorting = "ztoa"
+            self.note_display_interface(current_category)
+
         for widget in self.main_win.winfo_children():
             widget.destroy()
 
-        self.titles_display_frame = Frame(self.main_win, bg="red", width=270, height=20)
-        self.titles_display_frame.configure(bg="red")
-        column_title = 0
-        for legend_name, legend_position in note_legend_name_and_position.items():
-            note_title_legend = Label(self.titles_display_frame, text=legend_name, bg=QuickNotesApp.PALETTE["main"]["3color"],
-                                      fg=QuickNotesApp.PALETTE["text"]["1color"],
-                                      font=("Arial", 12, "bold"), anchor="w", width=21)
-            note_title_legend.grid(row=0, column=column_title)
-            column_title += 1
-        self.titles_display_frame.place(x=10, y=10)
-        if self.open_note_frame:
-            self.open_note_frame.pack_forget()
         # Create an area to display notes
-        self.notes_display_frame = Frame(self.main_win)
-        self.notes_display_frame.grid(row=0, column=0, padx=10, pady=50)
+        self.notes_display_frame = Frame(self.main_win, bg=QuickNotesApp.PALETTE["main"]["3color"])
+        self.notes_display_frame.grid(row=0, column=0, padx=10, pady=10)
+        values = ['by creation date (newest)',
+                  'by creation date (oldest)',
+                  'by name (A to Z)',
+                  'by name (Z to A)']
 
+        # Создание Combobox
+        combo = Combobox(self.notes_display_frame, values=values)
+        combo.configure(background=QuickNotesApp.PALETTE["main"]["3color"],
+                        width=20, state="readonly")
+
+        combo.bind("<<ComboboxSelected>>", lambda event, current_cat=note_category: handle_combobox(event, current_cat))
+        if self.note_sorting == "newest":
+            combo.current(0)
+        elif  self.note_sorting == "oldest":
+            combo.current(1)
+        elif self.note_sorting == "atoz":
+            combo.current(2)
+        elif  self.note_sorting == "ztoa":
+            combo.current(3)
+
+        combo.pack(anchor="se", padx=5)
         # Create a Scrollbar and create a Canvas for this
-        notes_canvas = Canvas(self.notes_display_frame, width=775, height=480)
+        notes_canvas = Canvas(self.notes_display_frame, width=765, height=550)
         scrollbar_for_notes_canvas = Scrollbar(self.notes_display_frame, orient="vertical",
                                                command=notes_canvas.yview)
         notes_canvas.configure(yscrollcommand=scrollbar_for_notes_canvas.set,
                                bg=QuickNotesApp.PALETTE["main"]["3color"], borderwidth=0, highlightthickness=0)
         notes_canvas.pack(side="left", fill="both", expand=True)
+
+        # Отображение Combobox
 
         # Create a frame to display data on canvas
         frame_to_display = Frame(notes_canvas)
@@ -226,59 +251,85 @@ class QuickNotesApp:
         notes_canvas.create_window((0, 0), window=frame_to_display, anchor="nw")
 
         # Getting all notes into a list from the database
-        all_database_notes = NotesDatabaseAction.select_all_notes(table_name="notes_info", category=note_category)
-        if len(all_database_notes) > 15:
-            scrollbar_for_notes_canvas.pack(side="right", fill="y")
+        all_database_notes = NotesDatabaseAction.select_all_notes(table_name="notes_info", category=note_category,
+                                                                  sorting=self.note_sorting)
+        if len(all_database_notes) > 5:
+            scrollbar_for_notes_canvas.pack(side="left", fill="y")
 
-        # Dictionary, which defines the position of notes data
-        # {name: (column_name, padx_data, width_line, column_number_line, padx_line)}
-        note_data_and_line = {
-            "notes_column_id": "id",
-            "notes_column_head": ('head', 1, 16, 0, 0),
-            "notes_column_description": ('description', 2, 30, 1, 2),
-            "notes_column_additional": ('additional', 1, 24, 2, 1),
-            "notes_column_category": ('name_cat', 0, 10, 3, 0)
+        print(all_database_notes)
 
-        }
         all_note_data = list()
-
         # Write out all the data in the frame
         for note_num in range(len(all_database_notes)):
-            for note_column_name, note_column_value in note_data_and_line.items():
-                if note_column_name != "notes_column_id":
-                    line_under_note = Label(frame_to_display, bg=QuickNotesApp.PALETTE["main"]["1color"], width=note_column_value[2], pady=1, padx=1)
-                    line_under_note.grid(row=note_num, column=note_column_value[3],
-                                         padx=note_column_value[4], pady=4, sticky="se")
+            note_frame = Label(frame_to_display)
+            note_frame.configure(bg=QuickNotesApp.PALETTE["main"]["3color"])
 
-                    note_data = Label(frame_to_display, text=f"{all_database_notes[note_num][note_column_value[0]]}",
-                                      fg=QuickNotesApp.PALETTE["text"]["2color"],
-                                      bg=QuickNotesApp.PALETTE["main"]["3color"], width=note_column_value[2],
-                                      anchor="w")
-                    note_data.grid(row=note_num, column=note_column_value[3],
-                                   padx=note_column_value[1], pady=5, sticky="e")
-                    all_note_data.append(note_data)
-                else:
-                    note_data = Label(frame_to_display, text=f"{all_database_notes[note_num][note_column_value]}")
-                    all_note_data.append(note_data)
-            for note_label in all_note_data:
-                note_label.bind("<Button-1>",
-                                lambda event, labels=tuple(all_note_data): change_active_data_color(labels))
-                note_label.bind("<Double-Button-1>",
-                                lambda event, labels=tuple(all_note_data): self.open_note_information(labels))
+            category_label = Label(note_frame, text=f"{all_database_notes[note_num]['note_category']}",
+                                   font=("Arial bold", 13),
+                                   bg=QuickNotesApp.PALETTE["secondary"]["1color"],
+                                   fg=QuickNotesApp.PALETTE["main"]["3color"],
+                                   anchor="nw")
+
+            datetime_label = Label(note_frame, text=f"{all_database_notes[note_num]['created_at']}",
+                                   font=("Arial bold", 13),
+                                   bg=QuickNotesApp.PALETTE["secondary"]["1color"],
+                                   fg=QuickNotesApp.PALETTE["main"]["3color"],
+                                   anchor="nw")
+
+            # Second row with title
+            title_label = Label(note_frame, text=f"{all_database_notes[note_num]['note_name']}", font=("Arial", 16, "bold"),
+                                bg=QuickNotesApp.PALETTE["main"]["3color"], fg="white",
+                                anchor="nw")
+
+            # Third row with description
+            description_label = Label(note_frame, text=f"{all_database_notes[note_num]['note_description']}",
+                                      bg=QuickNotesApp.PALETTE["main"]["3color"], font=("Arial", 12), anchor="nw")
+
+            empty_cell = Frame(note_frame, width=755, height=2, bg=QuickNotesApp.PALETTE["main"]["1color"])
+
+            category_label.grid(row=0, column=0, padx=2, pady=2, sticky="w")
+            datetime_label.grid(row=0, column=1, sticky="e", padx=2, pady=2)  # ne
+            title_label.grid(row=1, column=0, columnspan=2, pady=10, sticky="w")
+            description_label.grid(row=2, column=0, columnspan=2, sticky="w")
+            empty_cell.grid(row=3, column=0, columnspan=2, pady=5, sticky="news")
+
+            all_note_data.append(note_frame)
+
+            for place in (note_frame, title_label):
+                place.bind("<Button-1>",
+                           lambda event, labels=tuple(all_note_data),
+                                  active_note=note_frame,
+                                  active_id=all_database_notes[note_num]['id']: change_active_data_color(
+                               labels, active_note, active_id))
+                place.bind("<Double-Button-1>",
+                           lambda event, active_note=note_frame: self.open_note_information(
+                               active_note))
+
+            note_frame.pack(anchor="nw")
             all_note_data.clear()
 
         for pop_up_button in self.pop_up_buttons.values():
             pop_up_button.destroy()
 
     def open_note_information(self, label):
+
+
+
         all_text_label = {}
-        for index, text_in_label in enumerate(label):
+        for index, text_in_label in enumerate(label.winfo_children()[:-1]):
             all_text_label[index] = text_in_label.cget("text")
 
         # Updating the notes interface area when categories change
         for widget in self.main_win.winfo_children():
             widget.destroy()
 
+        values = ['apple', 'banana', 'cherry', 'date', 'elderberry']
+
+        # Создание Combobox
+        combo = Combobox(self.main_win, values=values)
+
+        # Отображение Combobox
+        combo.pack(padx=10, pady=30)
         # удалить   main_frame_in_main
 
         self.open_note_frame = Frame(self.main_win)
@@ -297,7 +348,7 @@ class QuickNotesApp:
 
         # Создаем третью область Text
         addit_text_area = Text(self.open_note_frame, height=3, width=100)
-        addit_text_area.insert(INSERT, all_text_label[3])
+        addit_text_area.insert(INSERT, all_text_label[0])
         addit_text_area.pack()
 
 
@@ -306,7 +357,7 @@ if __name__ == "__main__":
     win = Tk()
     win_w, win_h = 1000, 600
     win.title("Quick notes")
-    win.geometry(f"{win_w}x{win_h}+400+250")
+    win.geometry(f"{win_w}x{win_h}+200+150")
     win.resizable(False, False)
 
     side_frame = Frame(win, bg=QuickNotesApp.PALETTE["main"]["2color"], border=3, relief="flat",
