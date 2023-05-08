@@ -30,23 +30,23 @@ class OperationButtonAdd:
         header_label = Label(self.root, text="CREATE A NOTE", bg=QuickNotesApp.PALETTE["main"]["3color"],
                              fg=QuickNotesApp.PALETTE["text"]["1color"],
                              font=("Arial", 15, "bold"), anchor="w")
-        header_label.place(x=10, y=10)
+        header_label.pack(padx=10, pady=10, anchor="nw")
 
         number_allowed_characters_name = NotesDatabaseAction.select_number_characters("notes_info", "note_name")
         number_allowed_characters_desc = NotesDatabaseAction.select_number_characters("notes_info", "note_description")
 
-        self.name_form = Text(self.root, height=1, width=54, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="none",
+        self.name_form = Text(self.root, height=1, width=39, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="none",
                               border=3, relief="flat", selectborderwidth=0, highlightthickness=0, font=("Arial", 24, "bold"),
-                              fg=QuickNotesApp.PALETTE["main"]["3color"], undo=True,
+                              fg=QuickNotesApp .PALETTE["main"]["3color"], undo=True,
                               insertbackground=QuickNotesApp.PALETTE["main"]["2color"])
-        self.name_form.place(x=10, y=50)
+        self.name_form.pack(padx=10, pady=3, anchor="nw")
 
-        self.desc_form = Text(self.root, height=24, width=61, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="word",
-                              border=3, relief="flat", selectborderwidth=0, highlightthickness=0, font=("Arial", 16),
+        self.desc_form = Text(self.root, height=24, width=60, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="word",
+                              border=2, relief="flat", selectborderwidth=0, highlightthickness=0, font=("Arial", 16),
                               fg=QuickNotesApp.PALETTE["main"]["3color"], undo=True, tabs=15, tabstyle="tabular",
-                              spacing1=5,
+                              spacing1=5, padx=5,
                               insertbackground=QuickNotesApp.PALETTE["main"]["2color"])
-        self.desc_form.place(x=10, y=87)
+        self.desc_form.pack(padx=10, pady=0, anchor="nw")
 
         for form in (self.name_form, self.desc_form):
             form.bind('<KeyRelease>', lambda e:
@@ -68,11 +68,11 @@ class OperationButtonAdd:
         category_name_label = Label(self.root, text="CATEGORY(*):", bg=QuickNotesApp.PALETTE["main"]["3color"],
                                     fg=QuickNotesApp.PALETTE["secondary"]["2color"],
                                     font=("Arial", 13, "bold"))
-        category_name_label.place(x=580, y=100)
+        category_name_label.place(x=580, y=10)
 
         # Creating a frame for selecting categories
         select_category_frame = Frame(self.root)
-        select_category_frame.place(x=580, y=135)
+        select_category_frame.place(x=580, y=45)
 
         self.category_listbox = Listbox(select_category_frame, width=19, height=7, font=("Arial", 15),
                                         bg=QuickNotesApp.PALETTE["main"]["3color"], border=3, relief="sunken")
