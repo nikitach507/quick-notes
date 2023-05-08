@@ -47,8 +47,10 @@ class QuickNotesApp:
         self.created_cat_button = None
         self.notes_display_frame = None
         self.open_note_frame = None
+        self.update_button = None
         self.note_sorting = "newest"
         self.pop_up_buttons = {}
+        self.previous_actions = set()
         self.operation_button_add = OperationButtonAdd(self.main_win, self.pop_up_buttons)
         self.operation_button_delete = OperationButtonDelete(win)
         self.category_button_action = CategoryButtonAction(win)
@@ -75,10 +77,10 @@ class QuickNotesApp:
         side_frame_categories = Frame(self.side_win)
         side_frame_categories.place(x=8, y=30)
 
-        self.side_listbox_categories = Listbox(side_frame_categories, width=12,
+        self.side_listbox_categories = Listbox(side_frame_categories, width=15,
                                                fg=QuickNotesApp.PALETTE["text"]["1color"],
-                                               font=("Arial", 20),
-                                               bg=QuickNotesApp.PALETTE["main"]["2color"], relief="flat",
+                                               font=("Arial", 20), relief='flat',
+                                               bg=QuickNotesApp.PALETTE["main"]["2color"]
                                                )
 
         side_scrollbar_categories = Scrollbar(side_frame_categories)
@@ -183,11 +185,11 @@ class QuickNotesApp:
                 if isinstance(child, Label):
 
                     if child.cget('bg') == QuickNotesApp.PALETTE["main"]["3color"] and child in labels_list:
-                        for label in active_note.winfo_children()[2:-1]:
+                        for label in active_note.winfo_children()[3:-1]:
                             label.config(bg=QuickNotesApp.PALETTE["main"]["1color"])
                         child.config(bg=QuickNotesApp.PALETTE["main"]["1color"])
                     else:
-                        for label in child.winfo_children()[2:-1]:
+                        for label in child.winfo_children()[3:-1]:
                             label.config(bg=QuickNotesApp.PALETTE["main"]["3color"])
                         child.config(bg=QuickNotesApp.PALETTE["main"]["3color"])
 
@@ -234,7 +236,7 @@ class QuickNotesApp:
         elif  self.note_sorting == "ztoa":
             combo.current(3)
 
-        combo.pack(padx=5,)
+        combo.pack(padx=5)
         # Create a Scrollbar and create a Canvas for this
         notes_canvas = Canvas(self.notes_display_frame, width=765, height=525)
         scrollbar_for_notes_canvas = Scrollbar(self.notes_display_frame, orient="vertical",
@@ -264,22 +266,24 @@ class QuickNotesApp:
             note_frame = Label(frame_to_display)
             note_frame.configure(bg=QuickNotesApp.PALETTE["main"]["3color"])
 
+            index_frame = Label(note_frame, text=f"{all_database_notes[note_num]['id']}")
+
             category_label = Label(note_frame, text=f"{all_database_notes[note_num]['note_category']}",
                                    font=("Arial bold", 13),
                                    bg=QuickNotesApp.PALETTE["secondary"]["1color"],
                                    fg=QuickNotesApp.PALETTE["main"]["3color"],
                                    anchor="nw")
 
-            datetime_label = Label(note_frame, text=f"{all_database_notes[note_num]['created_at']}",
+            datetime_label = Label(note_frame, text=f"{str(all_database_notes[note_num]['created_at'])[:10]}",
                                    font=("Arial bold", 13),
                                    bg=QuickNotesApp.PALETTE["secondary"]["1color"],
                                    fg=QuickNotesApp.PALETTE["main"]["3color"],
                                    anchor="nw")
-
-
-
+            line_spacing_cleanup_name = ' '.join(all_database_notes[note_num]['note_name'][:56].split())
+            if len(all_database_notes[note_num]['note_name']) > 56:
+                line_spacing_cleanup_name += "..."
             # Second row with title
-            title_label = Label(note_frame, text=f"{all_database_notes[note_num]['note_name']}", font=("Arial", 16, "bold"),
+            title_label = Label(note_frame, text=f"{line_spacing_cleanup_name}", font=("Arial", 16, "bold"),
                                 bg=QuickNotesApp.PALETTE["main"]["3color"], fg="white",
                                 anchor="nw")
             line_spacing_cleanup = ' '.join(all_database_notes[note_num]['note_description'][:80].split())
@@ -292,8 +296,6 @@ class QuickNotesApp:
 
             empty_cell = Frame(note_frame, width=755, height=2, bg=QuickNotesApp.PALETTE["main"]["1color"])
 
-
-
             category_label.grid(row=0, column=0, padx=2, pady=2, sticky="w")
             datetime_label.grid(row=0, column=1, sticky="e", padx=2, pady=2)  # ne
             title_label.grid(row=1, column=0, columnspan=2, pady=10, sticky="w")
@@ -301,7 +303,6 @@ class QuickNotesApp:
             empty_cell.grid(row=3, column=0, columnspan=2, pady=5, sticky="news")
 
             all_note_data.append(note_frame)
-
             for place in (note_frame, title_label):
                 place.bind("<Button-1>",
                            lambda event, labels=tuple(all_note_data),
@@ -310,7 +311,10 @@ class QuickNotesApp:
                                labels, active_note, active_id))
                 place.bind("<Double-Button-1>",
                            lambda event, active_note=note_frame: self.open_note_information(
-                               active_note))
+                               active_note.winfo_children()[0].cget("text")))
+                # place.bind("<Button-1>",
+                #            lambda event, active_note=note_frame: self.open_note_information(
+                #                active_note.winfo_children()[0].cget("text")))
 
             note_frame.pack(anchor="nw")
             all_note_data.clear()
@@ -318,43 +322,122 @@ class QuickNotesApp:
         for pop_up_button in self.pop_up_buttons.values():
             pop_up_button.destroy()
 
-    def open_note_information(self, label):
+    def open_note_information(self, note_id):
+        def check_changes(text_area):
+            column_of_change = "note_description" if text_area == desc_text_area else "note_name"
+            current_content = text_area.get("1.0", "end-1c")
+            original_content = info_note[0][column_of_change]
+            if current_content != original_content:
+                self.update_button.config(state="normal", bg=QuickNotesApp.PALETTE["secondary"]["1color"],
+                                          fg=QuickNotesApp.PALETTE["text"]["1color"])
+                self.previous_actions.add(column_of_change)
+            elif len(self.previous_actions) == 1 and column_of_change in self.previous_actions:
+                self.update_button.config(state="disabled")
+                self.previous_actions.remove(column_of_change)
+            else:
+                self.previous_actions.remove(column_of_change)
 
-        all_text_label = {}
-        for index, text_in_label in enumerate(label.winfo_children()[:-1]):
-            all_text_label[index] = text_in_label.cget("text")
+            truncators = {"note_name": variation_truncator_name, "note_description": variation_truncator_desc}
 
-        # Updating the notes interface area when categories change
+            for key_t, truncator in truncators.items():
+                if not truncator.winfo_ismapped() and key_t in self.previous_actions:
+                    truncator.place(x=605, y=77) if key_t == "note_name" else truncator.place(x=605, y=527)
+                elif truncator.winfo_ismapped() and key_t not in self.previous_actions:
+                    truncator.place_forget()
+
+
         for widget in self.main_win.winfo_children():
             widget.destroy()
 
-        values = ['apple', 'banana', 'cherry', 'date', 'elderberry']
+        info_note = NotesDatabaseAction.select_note("notes_info", note_id)
 
-        # Создание Combobox
-        combo = Combobox(self.main_win, values=values)
+        # Updating the notes interface area when categories change
+        self.open_note_frame = Frame(self.main_win, bg=QuickNotesApp.PALETTE["main"]["1color"],
+                                     highlightbackground=QuickNotesApp.PALETTE["main"]["1color"],
+                                     highlightthickness=2, relief="flat",
+                                     highlightcolor=QuickNotesApp.PALETTE["main"]["1color"])
+        self.open_note_frame.pack(side="left", padx=5, pady=5, anchor="nw")
+        self.supplementary_frame = Frame(self.main_win, bg=QuickNotesApp.PALETTE["main"]["3color"],
+                          highlightthickness=0, relief="flat")
+        self.supplementary_frame.pack(side="right", expand=True, padx=2, pady=5, anchor="nw")
 
-        # Отображение Combobox
-        combo.pack(padx=10, pady=30)
-        # удалить   main_frame_in_main
+        nested_data = {}
+        self.previous_actions = set()
 
-        self.open_note_frame = Frame(self.main_win)
-        self.open_note_frame.pack(padx=10, pady=100)
+        name_text_area = Text(self.open_note_frame, height=3, relief="flat", width=43,
+                              bg=QuickNotesApp.PALETTE["main"]["3color"],font=("Arial", 24, "bold"),
+                              fg=QuickNotesApp.PALETTE["text"]["1color"], wrap="word",
+                              highlightthickness=0, padx=10, pady=5)
 
-        name_text_area = Text(self.open_note_frame, height=3, relief="flat", border=3, width=100,
-                              bg=QuickNotesApp.PALETTE["main"]["3color"],
-                              font=("Georgia", 20), tabs=1043, fg=QuickNotesApp.PALETTE["text"]["1color"])
-        name_text_area.insert(INSERT, all_text_label[1])
-        name_text_area.pack()
+        name_text_area.insert(INSERT, info_note[0]["note_name"])
+        name_text_area.pack(anchor="nw")
 
-        # Создаем вторую область Text
-        desc_text_area = Text(self.open_note_frame, height=5, width=100, )
-        desc_text_area.insert(INSERT, all_text_label[2])
-        desc_text_area.pack()
+        desc_text_area = Text(self.open_note_frame, height=19, width=67, wrap="word", font=("Arial", 16),
+                              bg=QuickNotesApp.PALETTE["main"]["3color"], highlightthickness=0,
+                              tabs=15, tabstyle="tabular", takefocus=False, padx=10, pady=5,
+                              spacing1=5, undo=True
+                              )
+        desc_text_area.insert(INSERT, info_note[0]["note_description"])
+        desc_text_area.pack(pady=4, anchor="nw")
 
-        # Создаем третью область Text
-        addit_text_area = Text(self.open_note_frame, height=3, width=100)
-        addit_text_area.insert(INSERT, all_text_label[0])
-        addit_text_area.pack()
+        supplementary_info = {"Category": info_note[0]['note_category'].upper(),
+                              "Date of addition": str(info_note[0]['created_at'])[:10],
+                              "Time of addition": str(info_note[0]['created_at'])[10:]
+                              }
+        for title, info in supplementary_info.items():
+            Label(self.supplementary_frame, text=title.upper(), width=16,
+                  bg=QuickNotesApp.PALETTE["main"]["3color"],
+                  fg=QuickNotesApp.PALETTE["text"]["2color"],
+                  font=("Arial", 12, "bold"),
+                  ).pack(pady=2)
+            Label(self.supplementary_frame, text=info, width=16,
+                  bg=QuickNotesApp.PALETTE["text"]["2color"],
+                  fg=QuickNotesApp.PALETTE["main"]["3color"],
+                  font=("Arial", 15, "bold"),
+                  ).pack(pady=10)
+
+        nested_data["note_name"] = name_text_area
+        nested_data["note_description"] = desc_text_area
+
+        number_allowed_characters_name = NotesDatabaseAction.select_number_characters("notes_info", "note_name")
+        number_allowed_characters_desc = NotesDatabaseAction.select_number_characters("notes_info", "note_description")
+
+        update_comm = lambda: (self.operation_button_add.saving_received_data("update", name_text_area, desc_text_area,
+                                                                              info_note[0]["note_category"], nested_data,
+                                                                              number_allowed_characters_name,
+                                                                              number_allowed_characters_desc, note_id),
+                               self.open_note_information(note_id))
+
+        self.update_button = Button(self.main_win, text="Update", border=3, relief="flat",
+                                    disabledforeground=QuickNotesApp.PALETTE["text"]["3color"],
+                                    disabledbackground=QuickNotesApp.PALETTE["main"]["1color"],
+                                    activebackground=QuickNotesApp.PALETTE["secondary"]["1color"],
+                                    activeforeground=QuickNotesApp.PALETTE["text"]["2color"],
+                                    state="disabled",
+                                    command=update_comm)
+        self.update_button.place(x=665, y=515)
+
+        variation_truncator_name = Canvas(self.open_note_frame, width=15, height=15, bg=QuickNotesApp.PALETTE["main"]["3color"],
+                                          highlightthickness=0, relief="flat")
+        variation_truncator_desc = Canvas(self.open_note_frame, width=15, height=15,
+                                          bg=QuickNotesApp.PALETTE["main"]["3color"],
+                                          highlightthickness=0, relief="flat")
+        # координаты вершин треугольника
+        x1, y1 = 5, 15
+        x2, y2 = 15, 15
+        x3, y3 = 15, 5
+        # canvas.place(x=10, y=10)
+        # canvas.place(x=100, y=100)
+
+        # нарисовать треугольник
+
+        variation_truncator_name.create_polygon(x1, y1, x2, y2, x3, y3, fill=QuickNotesApp.PALETTE["secondary"]["1color"])
+        variation_truncator_desc.create_polygon(x1, y1, x2, y2, x3, y3,
+                                                fill=QuickNotesApp.PALETTE["secondary"]["1color"])
+
+        name_text_area.bind("<KeyRelease>", lambda e: check_changes(name_text_area))
+        desc_text_area.bind("<KeyRelease>", lambda e: check_changes(desc_text_area))
+
 
 
 if __name__ == "__main__":

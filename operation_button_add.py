@@ -11,7 +11,7 @@ class OperationButtonAdd:
         self.category_listbox = None
         self.selected_category = ""
         self.active_item = None
-        self.input_form = None
+        self.name_form = None
         self.desc_form = None
         self.name_char_count_error = None
         self.desc_char_count_error = None
@@ -35,27 +35,28 @@ class OperationButtonAdd:
         number_allowed_characters_name = NotesDatabaseAction.select_number_characters("notes_info", "note_name")
         number_allowed_characters_desc = NotesDatabaseAction.select_number_characters("notes_info", "note_description")
 
-        self.input_form = Text(self.root, height=1, width=54, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="none",
-                               border=3, relief="flat", selectborderwidth=0, highlightthickness=0, font=("Arial", 24, "bold"),
-                               fg=QuickNotesApp.PALETTE["main"]["3color"],
-                               insertbackground=QuickNotesApp.PALETTE["main"]["2color"])
-        self.input_form.place(x=10, y=50)
+        self.name_form = Text(self.root, height=1, width=54, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="none",
+                              border=3, relief="flat", selectborderwidth=0, highlightthickness=0, font=("Arial", 24, "bold"),
+                              fg=QuickNotesApp.PALETTE["main"]["3color"], undo=True,
+                              insertbackground=QuickNotesApp.PALETTE["main"]["2color"])
+        self.name_form.place(x=10, y=50)
 
         self.desc_form = Text(self.root, height=24, width=61, bg=QuickNotesApp.PALETTE["secondary"]["2color"], wrap="word",
                               border=3, relief="flat", selectborderwidth=0, highlightthickness=0, font=("Arial", 16),
-                              fg=QuickNotesApp.PALETTE["main"]["3color"],
+                              fg=QuickNotesApp.PALETTE["main"]["3color"], undo=True, tabs=15, tabstyle="tabular",
+                              spacing1=5,
                               insertbackground=QuickNotesApp.PALETTE["main"]["2color"])
         self.desc_form.place(x=10, y=87)
 
-        for form in (self.input_form, self.desc_form):
+        for form in (self.name_form, self.desc_form):
             form.bind('<KeyRelease>', lambda e:
             self.check_input_length(number_allowed_characters_name, number_allowed_characters_desc))
 
-        nested_data["note_name"] = self.input_form
+        nested_data["note_name"] = self.name_form
         nested_data["note_description"] = self.desc_form
-        saving_comm = lambda data=nested_data: self.saving_received_data(data, number_allowed_characters_name,
-                                                                         number_allowed_characters_desc)
-
+        saving_comm = lambda: self.saving_received_data("save", self.name_form, self.desc_form,
+                                                        self.selected_category, nested_data,
+                                                        number_allowed_characters_name, number_allowed_characters_desc)
         # Create a button to add data to the database
         save_button = Button(self.root, text="Save", bg=QuickNotesApp.PALETTE["secondary"]["1color"],
                              fg=QuickNotesApp.PALETTE["text"]["1color"],
@@ -133,40 +134,54 @@ class OperationButtonAdd:
                 self.category_listbox.itemconfig(item, bg=QuickNotesApp.PALETTE["main"]["3color"],
                                                  fg=QuickNotesApp.PALETTE["text"]["2color"])
 
-    def saving_received_data(self, nested_data, allowed_characters_name, allowed_characters_desc):
-        current_category = self.selected_category
+    def saving_received_data(self, action: Literal["save", "update"],
+                             save_name_form, save_desc_form, current_category, nested_data,
+                             allowed_characters_name, allowed_characters_desc, note_id=None):
+        """
+            This function works with the button to save and add to the database.
+            :param action: Action the button should perform
+            :type action: str
+        """
         # Checks that all data is available before it is stored
-        if len(self.input_form.get('1.0', 'end-1c')) <= allowed_characters_name \
-                and len(self.desc_form.get('1.0', 'end-1c')) <= allowed_characters_desc:
-            if self.presence_check_necessary_data(nested_data, current_category):
+        if len(save_name_form.get('1.0', 'end-1c')) <= allowed_characters_name \
+                and len(save_desc_form.get('1.0', 'end-1c')) <= allowed_characters_desc:
+            if self.presence_check_necessary_data(save_name_form, current_category):
                 get_input_data = {}
                 for name_column, data_column in nested_data.items():
                     get_input_data[name_column] = data_column.get("1.0", "end-1c")
                     get_input_data["note_category"] = current_category
                     # After adding to the dictionary, clear the area
-                    data_column.delete("1.0", END)
-                # Adding to the database
+                    if action == "save":
+                        data_column.delete("1.0", END)
+
                 note = NotesDatabaseAction(get_input_data["note_name"], get_input_data["note_description"],
                                            get_input_data["note_category"])
-                note.add_note("notes_info")
-        elif len(self.input_form.get('1.0', 'end-1c')) > allowed_characters_name:
+                # Adding to the database
+                if action == "save":
+                    note.add_note("notes_info")
+                    self.selected_category = ""
+                elif action == "update":
+                    note.edit_note(table_name="notes_info", note_id=note_id)
+                self.selected_category = ""
+        elif len(save_name_form.get('1.0', 'end-1c')) > allowed_characters_name:
             messagebox.showerror("Error",
                                  f"The header must have a maximum of {allowed_characters_name} characters, "
-                                 f"now you have {len(self.input_form.get('1.0', 'end-1c'))}")
-        elif len(self.desc_form.get('1.0', 'end-1c')) > allowed_characters_desc:
+                                 f"now you have {len(save_name_form.get('1.0', 'end-1c'))}")
+        elif len(save_desc_form.get('1.0', 'end-1c')) > allowed_characters_desc:
             messagebox.showerror("Error",
                                  f"The description must have a maximum of {allowed_characters_desc} characters, "
-                                 f"now you have {len(self.desc_form.get('1.0', 'end-1c'))}")
+                                 f"now you have {len(save_desc_form.get('1.0', 'end-1c'))}")
 
     def check_input_length(self, allowed_characters_name, allowed_characters_desc):
         block_count_name, block_count_desc = 1000, 19000
-        current_count_name = len(self.input_form.get('1.0', 'end-1c'))
+        current_count_name = len(self.name_form.get('1.0', 'end-1c'))
         current_count_desc = len(self.desc_form.get('1.0', 'end-1c'))
         # Function to check the number of characters
         if block_count_name > current_count_name > allowed_characters_name:
             if self.name_char_count_error is not None:
                 self.name_char_count_error.destroy()
-            self.name_char_count_error = Label(self.root, text=f"Maximum number of characters in the header: {allowed_characters_name}, "
+            self.name_char_count_error = Label(self.root, text=f"Maximum number of characters "
+                                                               f"in the header: {allowed_characters_name}, "
                                                     f"now characters: {current_count_name}",
                                                bg=QuickNotesApp.PALETTE["main"]["3color"],
                                                fg=QuickNotesApp.PALETTE["secondary"]["4color"])
@@ -174,7 +189,7 @@ class OperationButtonAdd:
         elif current_count_name >= block_count_name:
             if self.name_char_count_error is not None:
                 self.name_char_count_error.destroy()
-            self.input_form.configure(state="disable")
+            self.name_form.configure(state="disable")
             self.name_char_count_error = Label(self.root, text=f"The input field for the header is locked. "
                                                                f"Now characters: {current_count_name}",
                                                bg=QuickNotesApp.PALETTE["main"]["3color"],
@@ -209,11 +224,9 @@ class OperationButtonAdd:
             if self.desc_char_count_error is not None:
                 self.desc_char_count_error.destroy()
 
-
-
-    def presence_check_necessary_data(self, inspection_data, name_category):
+    def presence_check_necessary_data(self, save_name_form, name_category):
         # Function to check the note title and category
-        if len(self.input_form.get('1.0', 'end-1c')) == 0 or name_category == "":
+        if len(save_name_form.get('1.0', 'end-1c')) == 0 or name_category == "":
             messagebox.showerror("Error",
                                  f"The main condition for creating a note is to write "
                                  f"a title and select a category")
