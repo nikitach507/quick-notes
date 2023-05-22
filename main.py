@@ -1,6 +1,7 @@
 from lib_imports import PALETTE, Frame, Tk
 from operation_button_manager import OperationButtonManager
 from side_category_list import SideCategoryList
+from category_button_manager import CategoryButtonManager
 
 
 class QuickNotesApp:
@@ -27,6 +28,10 @@ class QuickNotesApp:
             self.main_window, self.upper_window, self.side_window
         )
 
+        self.actions_of_category_buttons = CategoryButtonManager(
+            self.side_window, self.main_window, self.upper_window
+        )
+
     def create_app_interface(self):
         """
         Creates the application interface by creating buttons to control notes
@@ -37,6 +42,8 @@ class QuickNotesApp:
 
         # Creating a side list of categories
         self.side_listbox_categories.create_side_category_list()
+
+        self.actions_of_category_buttons.start()
 
 
 if __name__ == "__main__":

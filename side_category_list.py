@@ -49,6 +49,8 @@ class SideCategoryList:
         """
         Creates the side category list and displays the categories.
         """
+        if hasattr(self, "frame_categories"):
+            self.frame_categories.destroy()
 
         frame_categories = Frame(self.side_frame)
         frame_categories.place(x=8, y=30)
@@ -86,6 +88,7 @@ class SideCategoryList:
         all_database_categories = CategoryDatabaseAction.all_categories_list(
             "note_category")
         all_database_categories.insert(0, "All notes")
+
         # Add the resulting categories to the area
         for category in all_database_categories:
             self.side_listbox_categories.insert("end", category)
