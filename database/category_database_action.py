@@ -7,14 +7,11 @@ class CategoryDatabaseAction:
     Provides methods for managing categories in a database.
     """
 
-    def __init__(self, name_cat: str):
+    def __init__(self):
         """
         Initialize a CategoryDatabaseAction instance.
-
-        Args:
-        name_cat (str): The name of the category.
         """
-        self.name_cat = name_cat
+        pass
 
     @staticmethod
     def _execute_query(query: str, params: Optional[tuple] = None):
@@ -38,15 +35,16 @@ class CategoryDatabaseAction:
         finally:
             db_connector.close()
 
-    def add_category(self, table_name: str):
+    def add_category(self, table_name: str, name_cat: str):
         """
         Add a category to the specified table.
 
         Args:
             table_name (str): The name of the table to add the category to.
+            name_cat (str): The name of the category.
         """
         insert_query = "INSERT INTO `%s` (name_cat) VALUES (%%s);" % table_name
-        params = (self.name_cat,)
+        params = (name_cat,)
         self._execute_query(insert_query, params)
         print("Adding a category was successful")
         print("#" * 20)
