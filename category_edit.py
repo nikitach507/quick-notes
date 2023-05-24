@@ -21,15 +21,12 @@ class CategoryEdit:
             edit_window.grab_set()
             edit_window.attributes("-topmost", True)
 
-            # Получить ширину и высоту монитора
             screen_width = edit_window.winfo_screenwidth()
             screen_height = edit_window.winfo_screenheight()
 
-            # Получить ширину и высоту окна
             window_width = 400
             window_height = 150
 
-            # Рассчитать координаты окна для его расположения в центре монитора
             x = (screen_width - window_width) // 2
             y = (screen_height - window_height) // 2
 
