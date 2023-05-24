@@ -1,5 +1,5 @@
 from database.category_database_action import CategoryDatabaseAction
-from lib_imports import PALETTE, Event, Frame, Listbox
+from lib_imports import PALETTE, Event, Frame, Listbox, Optional
 from note_list_viewer import NoteListViewer
 from operation_button_manager import OperationButtonManager
 
@@ -43,9 +43,10 @@ class SideCategoryList:
             self.actions_of_operation_buttons,
         )
         self.side_listbox_categories = None
+        self.side_listbox_active_category = None
         self.active_item: int = 0
 
-    def create_side_category_list(self):
+    def create_side_category_list(self, note_category: Optional[str] = "All notes"):
         """
         Creates the side category list and displays the categories.
         """
@@ -70,15 +71,18 @@ class SideCategoryList:
 
         # Getting all categories into a list from the database
         self.add_categories()
-        self.list_notes.create_note_display_interface()
+        if not self.side_listbox_active_category:
+            self.side_listbox_active_category = "All notes"
+        else:
+            self.side_listbox_active_category = note_category
+
+        self.list_notes.create_note_display_interface(self.side_listbox_active_category)
 
         # Bind event handlers to the list
-        for event in ("<<ListboxSelect>>", "<ButtonRelease-1>"):
-            self.side_listbox_categories.bind(event, self._category_selector_control)
+        self.side_listbox_categories.bind("<<ListboxSelect>>", self._category_selector_control)
 
-        # Set the default active item
-        self.side_listbox_categories.selection_set(0)
         self._update_color_side_listbox()
+
         self.side_listbox_categories.pack(side="left", fill="both", expand=True)
 
     def add_categories(self):
@@ -108,8 +112,10 @@ class SideCategoryList:
                 self.side_listbox_categories.selection_clear(self.active_item)
                 self.active_item = item_index
                 self.side_listbox_categories.selection_set(self.active_item)
+
+                self.side_listbox_active_category = widget.get(self.active_item)
+
                 self._update_color_side_listbox()
-                side_listbox_active_category = widget.get(self.active_item)
 
                 for widget in self.main_frame.winfo_children():
                     widget.destroy()
@@ -117,15 +123,14 @@ class SideCategoryList:
                 self.actions_of_operation_buttons.destroy_dynamic_buttons()
 
                 self.list_notes.create_note_display_interface(
-                    note_category=side_listbox_active_category)
+                    note_category=self.side_listbox_active_category)
 
     def _update_color_side_listbox(self):
         """
         Color management of the active category.
         """
-        # Updating the color of the active item
         for item in range(self.side_listbox_categories.size()):
-            if item == self.active_item:
+            if self.side_listbox_categories.get(item) == self.side_listbox_active_category:
                 self.side_listbox_categories.itemconfig(
                     item, selectforeground=PALETTE["text"]["1color"])
             else:
