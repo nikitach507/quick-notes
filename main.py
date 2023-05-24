@@ -43,7 +43,7 @@ class QuickNotesApp:
         # Creating a side list of categories
         self.side_listbox_categories.create_side_category_list()
 
-        self.actions_of_category_buttons.start()
+        self.actions_of_category_buttons.create_category_buttons()
 
 
 if __name__ == "__main__":
