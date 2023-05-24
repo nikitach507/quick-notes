@@ -36,7 +36,7 @@ class NoteCreator:
         self.name_char_count_error = None
         self.desc_char_count_error = None
 
-    def create_interface_add_note_tab(self):
+    def create_interface_add_note_tab(self, current_category):
         """
         Create a window interface for adding notes
         """
@@ -46,7 +46,7 @@ class NoteCreator:
         self._draw_window_title()
         self._draw_area_name_note()
         self._draw_area_description_note()
-        self._draw_area_category_note()
+        self._draw_area_category_note(current_category)
 
         number_allowed_characters_name = NotesDatabaseAction.select_number_characters(
             "notes_info", "note_name")
@@ -60,7 +60,7 @@ class NoteCreator:
                     number_allowed_characters_name, number_allowed_characters_desc))
 
         nested_data = {"note_name": self.name_text_form, "note_description": self.desc_text_form}
-        self.selected_category = ""
+        self.selected_category = current_category
         self._draw_area_save_note(
             nested_data, number_allowed_characters_name, number_allowed_characters_desc)
 
@@ -157,7 +157,7 @@ class NoteCreator:
         )
         save_button.place(x=670, y=515)
 
-    def _draw_area_category_note(self):
+    def _draw_area_category_note(self, current_category):
         """
         Draws the area for selecting a category for the note.
         """
@@ -169,36 +169,47 @@ class NoteCreator:
             font=("Arial", 13, "bold"),
         )
         category_name_label.place(x=580, y=10)
+        if current_category == "All notes":
+            # Creating a frame for selecting categories
+            select_category_frame = Frame(
+                self.main_frame,
+                bg=PALETTE["main"]["3color"],
+                highlightbackground=PALETTE["main"]["1color"],
+                highlightcolor=PALETTE["main"]["1color"],
+                highlightthickness=2,
+                padx=2, pady=2,
+            )
+            select_category_frame.place(x=580, y=45)
 
-        # Creating a frame for selecting categories
-        select_category_frame = Frame(
-            self.main_frame,
-            bg=PALETTE["main"]["3color"],
-            highlightbackground=PALETTE["main"]["1color"],
-            highlightcolor=PALETTE["main"]["1color"],
-            highlightthickness=2,
-            padx=2, pady=2,
-        )
-        select_category_frame.place(x=580, y=45)
+            category_listbox = Listbox(
+                select_category_frame,
+                width=19, height=7,
+                font=("Arial", 15),
+                bg=PALETTE["main"]["3color"],
+                border=0, relief="flat",
+                activestyle="none",
+                fg=PALETTE["text"]["2color"],
+                selectbackground=PALETTE["main"]["1color"],
+            )
+            category_listbox_scrollbar = Scrollbar(
+                select_category_frame,
+                command=category_listbox.yview,
+                troughcolor=PALETTE["main"]["3color"],
+            )
+            category_listbox.configure(yscrollcommand=category_listbox_scrollbar.set)
 
-        category_listbox = Listbox(
-            select_category_frame,
-            width=19, height=7,
-            font=("Arial", 15),
-            bg=PALETTE["main"]["3color"],
-            border=0, relief="flat",
-            activestyle="none",
-            fg=PALETTE["text"]["2color"],
-            selectbackground=PALETTE["main"]["1color"],
-        )
-        category_listbox_scrollbar = Scrollbar(
-            select_category_frame,
-            command=category_listbox.yview,
-            troughcolor=PALETTE["main"]["3color"],
-        )
-        category_listbox.configure(yscrollcommand=category_listbox_scrollbar.set)
-
-        self._category_list_management(category_listbox, category_listbox_scrollbar)
+            self._category_list_management(category_listbox, category_listbox_scrollbar)
+        else:
+            Label(
+                self.main_frame,
+                text=current_category.upper(),
+                width=20,
+                bg=PALETTE["text"]["2color"],
+                fg=PALETTE["main"]["3color"],
+                font=("Arial", 12, "bold"),
+                anchor="w"
+            ).place(x=583, y=46)
+            # self.selected_category = current_category
 
     def _category_list_management(
             self, category_listbox: Listbox, category_listbox_scrollbar: Scrollbar):

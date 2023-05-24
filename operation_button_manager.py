@@ -20,7 +20,7 @@ class OperationButtonManager:
             cls.__instance = super(OperationButtonManager, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window):
+    def __init__(self, main_window, operation_buttons_window, cat_side_obj):
         """
         Initializes the OperationButtonManager class.
 
@@ -35,6 +35,7 @@ class OperationButtonManager:
         self.notes_list = NoteListViewer(
             self.main_frame, self.operation_buttons_frame, self
         )
+        self.cat_side_obj = cat_side_obj
         self.pop_up_buttons = {}
         self.note_operation_buttons = None
         self.x_note_buttons = None
@@ -58,7 +59,11 @@ class OperationButtonManager:
 
         self.destroy_dynamic_buttons()
 
-        self.operation_button_add.create_interface_add_note_tab()
+        cat = self.cat_side_obj.side_listbox_active_category
+
+        self.cat_side_obj.create_side_category_list(cat)
+
+        self.operation_button_add.create_interface_add_note_tab(cat)
 
     def draw_operating_button(self, button_symbol: str, button_action: callable):
         """
