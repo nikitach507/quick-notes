@@ -93,6 +93,14 @@ class NotesDatabaseAction:
         print("#" * 20)
 
     @staticmethod
+    def edit_category_in_note(table_name: str, name_cat_now: str, name_cat_after: str):
+        edit_query = "UPDATE `%s` SET note_category = %%s WHERE note_category = %%s;" % table_name
+        params = (name_cat_after, name_cat_now)
+        NotesDatabaseAction._execute_query(edit_query, params)
+        print("Editing the note was successful")
+        print("#" * 20)
+
+    @staticmethod
     def delete_note(table_name: str, note_id: int):
         """
         Deletes a note from the specified table in the database.
@@ -105,6 +113,14 @@ class NotesDatabaseAction:
         params = (note_id,)
         NotesDatabaseAction._execute_query(delete_query, params)
         print("Deleting the note was successful")
+        print("#" * 20)
+
+    @staticmethod
+    def delete_all_note_in_category(table_name: str, name_cat_to_delete: str):
+        delete_query = "DELETE FROM `%s` WHERE note_category = %%s;" % table_name
+        params = (name_cat_to_delete,)
+        NotesDatabaseAction._execute_query(delete_query, params)
+        print(f"Deleting the all note from the category '{name_cat_to_delete}' was successful")
         print("#" * 20)
 
     @staticmethod

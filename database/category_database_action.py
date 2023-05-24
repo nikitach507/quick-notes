@@ -68,7 +68,7 @@ class CategoryDatabaseAction:
         print("#" * 20)
 
     @staticmethod
-    def delete_category(table_name: str, name_cat_now: str):
+    def delete_category(table_name: str, name_cat_to_delete: str):
         """
         Delete a category from the specified table.
 
@@ -77,7 +77,7 @@ class CategoryDatabaseAction:
             name_cat_now (str): The name of the category to delete.
         """
         delete_query = "DELETE FROM `%s` WHERE name_cat = %%s;" % table_name
-        params = (name_cat_now,)
+        params = (name_cat_to_delete,)
         CategoryDatabaseAction._execute_query(delete_query, params)
         print("Deleting the category was successful")
         print("#" * 20)
