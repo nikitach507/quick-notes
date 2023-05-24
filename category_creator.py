@@ -14,30 +14,26 @@ class CategoryCreator:
         self.input_cat = None
 
     def create_interface_add_category_win(self):
-        new_window = Toplevel()
-        new_window.title("ADD A NEW CATEGORY")
-        new_window.resizable(False, False)
-        new_window.grab_set()
-        new_window.attributes("-topmost", True)
+        window_add_category = Toplevel()
+        window_add_category.title("ADD A NEW CATEGORY")
+        window_add_category.resizable(False, False)
+        window_add_category.grab_set()
+        window_add_category.attributes("-topmost", True)
 
-        # Получить ширину и высоту монитора
-        screen_width = new_window.winfo_screenwidth()
-        screen_height = new_window.winfo_screenheight()
+        screen_width = window_add_category.winfo_screenwidth()
+        screen_height = window_add_category.winfo_screenheight()
 
-        # Получить ширину и высоту окна
         window_width = 400
         window_height = 150
 
-        # Рассчитать координаты окна для его расположения в центре монитора
         x = (screen_width - window_width) // 2
         y = (screen_height - window_height) // 2
 
-        # Установить координаты окна
-        new_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        new_window.configure(bg=PALETTE["main"]["1color"])
+        window_add_category.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        window_add_category.configure(bg=PALETTE["main"]["1color"])
 
-        self.draw_input_category(new_window)
-        self.draw_button_add(new_window)
+        self.draw_input_category(window_add_category)
+        self.draw_button_add(window_add_category)
 
     def draw_input_category(self, window):
         self.input_cat = Entry(window, bg=PALETTE["main"]["3color"], width=40,
@@ -51,8 +47,7 @@ class CategoryCreator:
         self.input_cat.pack(pady=40, anchor="center")
 
     def draw_button_add(self, window):
-        saving_comm = lambda: (CategoryDatabaseAction().add_category("note_category", self.input_cat.get()),
-                               self.close_window_after_adding(window))
+        saving_comm = lambda: self._action_after_press_add(window, self.input_cat.get())
 
         button = Button(window, text="Add", bg=PALETTE["secondary"]["1color"],
                         fg=PALETTE["text"]["1color"],
@@ -63,9 +58,13 @@ class CategoryCreator:
                         )
         button.place(x=136, y=80)
 
-    def close_window_after_adding(self, window):
+    def _action_after_press_add(self, window, current_input):
+        CategoryDatabaseAction().add_category("note_category", current_input)
+        self.close_window_after_adding(window, current_input)
+
+    def close_window_after_adding(self, window, current_input):
         window.destroy()
-        self.side_listbox_categories.create_side_category_list()
+        self.side_listbox_categories.create_side_category_list(note_category=current_input)
 
 
 
