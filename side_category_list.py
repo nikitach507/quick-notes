@@ -35,7 +35,7 @@ class SideCategoryList:
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
         self.actions_of_operation_buttons = OperationButtonManager(
-            self.main_frame, self.operation_buttons_frame
+            self.main_frame, self.operation_buttons_frame, self
         )
         self.list_notes = NoteListViewer(
             self.main_frame,

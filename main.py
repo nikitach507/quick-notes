@@ -21,16 +21,16 @@ class QuickNotesApp:
         self.upper_window = upper_area
         self.side_window = side_area
         self.main_window = main_area
+        self.actions_of_category_buttons = CategoryButtonManager(
+            self.side_window, self.main_window, self.upper_window
+        )
         self.actions_of_operation_buttons = OperationButtonManager(
-            self.main_window, self.upper_window
+            self.main_window, self.upper_window, self.actions_of_category_buttons
         )
         self.side_listbox_categories = SideCategoryList(
             self.main_window, self.upper_window, self.side_window
         )
 
-        self.actions_of_category_buttons = CategoryButtonManager(
-            self.side_window, self.main_window, self.upper_window
-        )
 
     def create_app_interface(self):
         """
