@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Combobox
 from typing import Literal, Optional
+import webbrowser
 
 from tkmacosx import *
 
