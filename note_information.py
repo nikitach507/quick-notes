@@ -1,7 +1,5 @@
-from typing import Set
-
 from database.notes_database_action import NotesDatabaseAction
-from lib_imports import PALETTE, Button, Canvas, Frame, Label, Text
+from lib_imports import PALETTE, Button, Canvas, Frame, Label, Text, Set
 from note_data_saver import NoteDataSaver
 
 
@@ -21,7 +19,7 @@ class NoteInformation:
             cls.__instance = super(NoteInformation, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window):
+    def __init__(self, main_window, operation_buttons_window, side_object):
         """
         Initializes the OperationButtonManager class.
 
@@ -32,6 +30,7 @@ class NoteInformation:
         """
         self.operation_buttons_frame = operation_buttons_window
         self.main_frame = main_window
+        self.side_object = side_object
         self.nested_data = {}
         self.name_text_area = None
         self.data_note_frame = None
@@ -121,6 +120,14 @@ class NoteInformation:
         )
         supplementary_frame.pack(side="right", expand=True, padx=2, pady=5, anchor="nw")
 
+        back_comm = lambda : self.side_object.create_side_category_list(self.info_note[0]["note_category"])
+        Button(supplementary_frame, text="Back",
+               bg=PALETTE["secondary"]["1color"],
+               fg=PALETTE["text"]["1color"],
+               activebackground=PALETTE["secondary"]["1color"],
+               activeforeground=PALETTE["text"]["2color"],
+               command=back_comm).pack(pady=3)
+
         supplementary_info = {
             "Category": self.info_note[0]["note_category"].upper(),
             "Date of addition": str(self.info_note[0]["created_at"])[:10],
@@ -158,8 +165,7 @@ class NoteInformation:
 
         update_comm = lambda: (
             self.open_note_information(note_id)
-            if NoteDataSaver.saving_received_data(
-                "update",
+            if NoteDataSaver.updating_received_data(
                 self.name_text_area,
                 self.desc_text_area,
                 self.info_note[0]["note_category"],

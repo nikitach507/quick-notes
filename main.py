@@ -31,7 +31,6 @@ class QuickNotesApp:
             self.main_window, self.upper_window, self.side_window
         )
 
-
     def create_app_interface(self):
         """
         Creates the application interface by creating buttons to control notes

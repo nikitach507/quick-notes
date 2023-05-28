@@ -35,12 +35,13 @@ class SideCategoryList:
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
         self.actions_of_operation_buttons = OperationButtonManager(
-            self.main_frame, self.operation_buttons_frame, self
+            self.main_frame, self.operation_buttons_frame, self,
         )
         self.list_notes = NoteListViewer(
             self.main_frame,
             self.operation_buttons_frame,
             self.actions_of_operation_buttons,
+            self,
         )
         self.side_listbox_categories = None
         self.side_listbox_active_category = None
@@ -65,7 +66,7 @@ class SideCategoryList:
             relief="flat",
             activestyle="none",
             bg=PALETTE["main"]["2color"],
-            height=15,
+            height=17,
             selectbackground=PALETTE["main"]["2color"],
         )
 

@@ -3,6 +3,7 @@ from database.notes_database_action import NotesDatabaseAction
 from lib_imports import (PALETTE, Button, Event, Frame, Label, Listbox,
                          Scrollbar, Text)
 from note_data_saver import NoteDataSaver
+from note_information import NoteInformation
 
 
 class NoteCreator:
@@ -21,7 +22,7 @@ class NoteCreator:
             cls.__instance = super(NoteCreator, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, operation_window, side_object):
         """
         Initializes the NoteCreator class.
 
@@ -29,6 +30,11 @@ class NoteCreator:
             main_window (tkinter.Frame): The main application frame in the window.
         """
         self.main_frame = main_window
+        self.operation_buttons_frame = operation_window
+        self.side_object = side_object
+        self.note_information_obj = NoteInformation(
+            self.main_frame, self.operation_buttons_frame, self.side_object
+        )
         self.selected_category = ""
         self.active_item = 0
         self.name_text_form = None
@@ -131,19 +137,10 @@ class NoteCreator:
             number_allowed_characters_desc (int): The maximum number of characters allowed
             for the note description.
         """
-        saving_comm = lambda: (
-            NoteDataSaver.saving_received_data(
-                action="save",
-                save_name_form=self.name_text_form,
-                save_desc_form=self.desc_text_form,
-                current_category=self.selected_category,
-                nested_data=nested_data,
-                allowed_characters_name=number_allowed_characters_name,
-                allowed_characters_desc=number_allowed_characters_desc,
-                note_id=None,
-            ),
-            self.selected_category == "",
-        )
+
+        saving_comm = lambda: self._saving_data(nested_data,
+                                                number_allowed_characters_name,
+                                                number_allowed_characters_desc)
         # Create a button to add data to the database
         save_button = Button(
             self.main_frame,
@@ -156,6 +153,21 @@ class NoteCreator:
             command=saving_comm,
         )
         save_button.place(x=670, y=515)
+
+    def _saving_data(self, nested_data: dict,
+                     number_allowed_characters_name: int,
+                     number_allowed_characters_desc: int):
+        NoteDataSaver.saving_received_data(
+            save_name_form=self.name_text_form,
+            save_desc_form=self.desc_text_form,
+            current_category=self.selected_category,
+            nested_data=nested_data,
+            allowed_characters_name=number_allowed_characters_name,
+            allowed_characters_desc=number_allowed_characters_desc,
+            note_information_object=self.note_information_obj,
+        )
+        self.selected_category = ""
+        #
 
     def _draw_area_category_note(self, current_category):
         """

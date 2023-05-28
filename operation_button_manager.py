@@ -1,7 +1,7 @@
 from lib_imports import PALETTE, Button
 from note_creator import NoteCreator
 from note_display_window import NoteDisplayWindow
-from note_list_viewer import NoteListViewer
+from note_deletion import NoteDeletion
 
 
 class OperationButtonManager:
@@ -31,11 +31,8 @@ class OperationButtonManager:
         """
         self.operation_buttons_frame = operation_buttons_window
         self.main_frame = main_window
-        self.operation_button_add = NoteCreator(self.main_frame)
-        self.notes_list = NoteListViewer(
-            self.main_frame, self.operation_buttons_frame, self
-        )
         self.cat_side_obj = cat_side_obj
+        self.operation_button_add = NoteCreator(self.main_frame, self.operation_buttons_frame, self.cat_side_obj)
         self.pop_up_buttons = {}
         self.note_operation_buttons = None
         self.x_note_buttons = None
@@ -106,7 +103,8 @@ class OperationButtonManager:
         self.destroy_dynamic_buttons()
 
         delete_note_lambda = lambda: (
-            self.notes_list.delete_note_button(note_id, note_category),
+            NoteDeletion.delete_note_button(note_id),
+            self.cat_side_obj.create_side_category_list(note_category=note_category),
             self.destroy_dynamic_buttons())
 
         note_window = NoteDisplayWindow()
