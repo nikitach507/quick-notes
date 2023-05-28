@@ -9,20 +9,18 @@ class NoteDataSaver:
 
     @staticmethod
     def saving_received_data(
-            action: Literal["save", "update"],
             save_name_form: Text,
             save_desc_form: Text,
             current_category: str,
             nested_data: dict,
             allowed_characters_name: int,
             allowed_characters_desc: int,
-            note_id: Optional[int] = None,
+            note_information_object,
     ):
         """
         Handles the action of saving or updating data in the database.
 
         Args:
-            action (str): The action to perform (either "save" or "update").
             save_name_form (tkinter.Text): The form field for the name of the note.
             save_desc_form (tkinter.Text): The form field for the description of the note.
             current_category (str): The selected category for the note.
@@ -31,7 +29,6 @@ class NoteDataSaver:
             for the name.
             allowed_characters_desc (int): The maximum number of characters allowed
             for the description.
-            note_id (Optional[int]): The ID of the note (for update action), defaults to None.
         """
         validate_input_length = (
                 len(save_name_form.get("1.0", "end-1c")) <= allowed_characters_name
@@ -41,18 +38,16 @@ class NoteDataSaver:
             if NoteDataSaver.presence_check_necessary_data(
                     save_name_form, current_category):
                 get_input_data = NoteDataSaver._get_input_data(
-                    nested_data, current_category, action)
+                    nested_data, current_category, "save")
                 note = NotesDatabaseAction(
                     get_input_data["note_name"],
                     get_input_data["note_description"],
                     get_input_data["note_category"],
                 )
-                # Adding to the database
-                if action == "save":
-                    note.add_note("notes_info")
-                elif action == "update":
-                    note.edit_note(table_name="notes_info", note_id=note_id)
-                    return True
+                note.add_note("notes_info")
+                last_note_id = NotesDatabaseAction.select_last_note("notes_info")
+                note_information_object.open_note_information(last_note_id)
+                return True
         else:
             NoteDataSaver._check_number_of_characters(
                 save_name_form,
@@ -61,6 +56,40 @@ class NoteDataSaver:
                 allowed_characters_desc,
             )
 
+    @staticmethod
+    def updating_received_data(
+            save_name_form: Text,
+            save_desc_form: Text,
+            current_category: str,
+            nested_data: dict,
+            allowed_characters_name: int,
+            allowed_characters_desc: int,
+            note_id: int,
+    ):
+        validate_input_length = (
+                len(save_name_form.get("1.0", "end-1c")) <= allowed_characters_name
+                and len(save_desc_form.get("1.0", "end-1c")) <= allowed_characters_desc)
+
+        if validate_input_length:
+            if NoteDataSaver.presence_check_necessary_data(
+                    save_name_form, current_category):
+                get_input_data = NoteDataSaver._get_input_data(
+                    nested_data, current_category, "update")
+                note = NotesDatabaseAction(
+                    get_input_data["note_name"],
+                    get_input_data["note_description"],
+                    get_input_data["note_category"],
+                )
+                note.edit_note(table_name="notes_info", note_id=note_id)
+                return True
+        else:
+            NoteDataSaver._check_number_of_characters(
+                save_name_form,
+                save_desc_form,
+                allowed_characters_name,
+                allowed_characters_desc,
+            )
+            
     @staticmethod
     def presence_check_necessary_data(save_name_form: Text, name_category: str):
         """
@@ -74,7 +103,7 @@ class NoteDataSaver:
             bool: True if both name and category are present, False otherwise.
         """
         # Function to check the note title and category
-        if len(save_name_form.get("1.0", "end-1c")) == 0 or name_category == "":
+        if len(save_name_form.get("1.0", "end-1c")) == 0 or name_category in ("", "All notes"):
             messagebox.showerror(
                 "Error",
                 "The main condition for creating a note is to write "
