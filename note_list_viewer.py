@@ -19,7 +19,7 @@ class NoteListViewer:
             cls.__instance = super(NoteListViewer, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, operation_object):
+    def __init__(self, main_window, operation_buttons_window, operation_object, side_object):
         """
         Initializes the OperationButtonManager class.
 
@@ -32,8 +32,9 @@ class NoteListViewer:
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
         self.operation_object = operation_object
+        self.side_object = side_object
         self.complete_note_info = NoteInformation(
-            self.main_frame, self.operation_buttons_frame)
+            self.main_frame, self.operation_buttons_frame, self.side_object)
         self.note_sorting = "newest"
         self.frame_to_display = None
         self.current_note_category = None
@@ -52,11 +53,11 @@ class NoteListViewer:
 
         # Create an area to display notes
         notes_display_frame = Frame(self.main_frame, bg=PALETTE["main"]["3color"])
-        notes_display_frame.grid(row=0, column=0, padx=10, pady=10)
+        notes_display_frame.grid(row=0, column=0, padx=5, pady=10)
 
         self.combobox(notes_display_frame)
 
-        notes_canvas = Canvas(notes_display_frame, width=765, height=525)
+        notes_canvas = Canvas(notes_display_frame, width=775, height=525)
         scrollbar_for_notes_canvas = Scrollbar(
             notes_display_frame, orient="vertical", command=notes_canvas.yview)
 
@@ -228,13 +229,13 @@ class NoteListViewer:
         )
 
         empty_cell = Frame(
-            note_frame, width=755, height=2, bg=PALETTE["main"]["1color"]
+            note_frame, width=765, height=2, bg=PALETTE["main"]["1color"]
         )
 
-        category_label.grid(row=0, column=0, padx=2, pady=2, sticky="w")
+        category_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
         datetime_label.grid(row=0, column=1, sticky="e", padx=2, pady=2)
-        title_label.grid(row=1, column=0, columnspan=2, pady=10, sticky="w")
-        description_label.grid(row=2, column=0, columnspan=2, sticky="w")
+        title_label.grid(row=1, column=0, columnspan=2, padx=10, pady=0, sticky="w")
+        description_label.grid(row=2, column=0, columnspan=2, padx=10, pady=5, sticky="w")
         empty_cell.grid(row=3, column=0, columnspan=2, pady=5, sticky="news")
 
         all_note_data.append(note_frame)
@@ -284,18 +285,3 @@ class NoteListViewer:
                     if is_active
                     else PALETTE["main"]["3color"]
                 )
-
-    def delete_note_button(self, current_id: int, category_to_delete: str):
-        """
-        Deletes a note from the database and updates the note display interface.
-
-        Args:
-            current_id (int): The ID of the note to be deleted.
-            category_to_delete (str): The category of the note to be deleted.
-        """
-        answer = messagebox.askokcancel(
-            "Delete Note", "Are you sure you want to delete the note?"
-        )
-        if answer:
-            NotesDatabaseAction.delete_note("notes_info", note_id=current_id)
-        self.create_note_display_interface(category_to_delete)
