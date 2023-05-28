@@ -169,7 +169,9 @@ class NotesDatabaseAction:
                     cursor.execute(select_all_rows)
 
                 all_notes_list = []
+
                 rows = cursor.fetchall()
+                # print(rows)
                 for row in rows:
                     all_notes_list.append(row)
                 return all_notes_list
@@ -196,6 +198,25 @@ class NotesDatabaseAction:
                 cursor.execute(select_all_info, note_id)
                 all_info_note = cursor.fetchall()
                 return all_info_note
+        finally:
+            db_connector.close()
+
+    @staticmethod
+    def select_last_note(table_name):
+        db_connector = DatabaseConnector()
+        connection = db_connector.connect()
+        try:
+            with connection.cursor() as cursor:
+                select_all_info = "SELECT * FROM `%s` " % table_name
+                cursor.execute(select_all_info)
+                all_notes_list = []
+
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    all_notes_list.append(row)
+
+                return all_notes_list[-1]["id"]
         finally:
             db_connector.close()
 
