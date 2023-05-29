@@ -25,3 +25,5 @@ class CategoryDelete:
                 CategoryDatabaseAction.delete_category("note_category", self.side_listbox_categories.side_listbox_active_category)
                 NotesDatabaseAction.delete_all_note_in_category("notes_info", self.side_listbox_categories.side_listbox_active_category)
             self.side_listbox_categories.create_side_category_list()
+        else:
+            messagebox.showinfo("Message", "Select a category to delete")
