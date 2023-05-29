@@ -1,7 +1,7 @@
 from database.category_database_action import CategoryDatabaseAction
 from lib_imports import PALETTE, Event, Frame, Listbox, Optional
-from note_list_viewer import NoteListViewer
-from operation_button_manager import OperationButtonManager
+from notes.note_list_viewer import NoteListViewer
+from notes.operation_button_manager import OperationButtonManager
 
 
 class SideCategoryList:

@@ -1,8 +1,8 @@
 from database.category_database_action import CategoryDatabaseAction
 from database.notes_database_action import NotesDatabaseAction
 from lib_imports import PALETTE, Button, Event, Frame, Label, Listbox, Scrollbar, Text
-from note_data_saver import NoteDataSaver
-from note_information import NoteInformation
+from notes.note_data_saver import NoteDataSaver
+from notes.note_information import NoteInformation
 
 
 class NoteCreator:

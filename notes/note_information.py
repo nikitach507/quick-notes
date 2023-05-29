@@ -1,6 +1,6 @@
 from database.notes_database_action import NotesDatabaseAction
 from lib_imports import PALETTE, Button, Canvas, Frame, Label, Text, Set
-from note_data_saver import NoteDataSaver
+from notes.note_data_saver import NoteDataSaver
 
 
 class NoteInformation:

@@ -5,3 +5,7 @@
 __pycache__/
 
 **/__pycache__/*.pyc
+
+categories/__init__.py
+
+notes/__init__.py

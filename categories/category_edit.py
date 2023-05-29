@@ -1,7 +1,7 @@
 from database.category_database_action import CategoryDatabaseAction
 from database.notes_database_action import NotesDatabaseAction
 from lib_imports import PALETTE, Toplevel, messagebox, Entry, Button, Label
-from side_category_list import SideCategoryList
+from categories.side_category_list import SideCategoryList
 
 
 class CategoryEdit:

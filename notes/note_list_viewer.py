@@ -1,7 +1,7 @@
 from database.notes_database_action import NotesDatabaseAction
 from lib_imports import (PALETTE, Canvas, Combobox, Frame, Label,
                          Optional, Scrollbar, messagebox, textwrap)
-from note_information import NoteInformation
+from notes.note_information import NoteInformation
 
 
 class NoteListViewer:

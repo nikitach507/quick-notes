@@ -1,6 +1,6 @@
-from category_creator import CategoryCreator
-from category_delete import CategoryDelete
-from category_edit import CategoryEdit
+from categories.category_creator import CategoryCreator
+from categories.category_delete import CategoryDelete
+from categories.category_edit import CategoryEdit
 from lib_imports import PALETTE, Label, Canvas, Button, webbrowser
 
 

@@ -1,7 +1,7 @@
 from lib_imports import PALETTE, Frame, Tk
-from operation_button_manager import OperationButtonManager
-from side_category_list import SideCategoryList
-from category_button_manager import CategoryButtonManager
+from notes.operation_button_manager import OperationButtonManager
+from categories.side_category_list import SideCategoryList
+from categories.category_button_manager import CategoryButtonManager
 
 
 class QuickNotesApp:

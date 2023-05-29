@@ -1,6 +1,6 @@
 from lib_imports import PALETTE, Toplevel, Entry, Button, Label
 from database.category_database_action import CategoryDatabaseAction
-from side_category_list import SideCategoryList
+from categories.side_category_list import SideCategoryList
 
 
 class CategoryCreator:

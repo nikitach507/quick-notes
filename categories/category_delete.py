@@ -1,6 +1,6 @@
 from lib_imports import messagebox
 from database.category_database_action import CategoryDatabaseAction
-from side_category_list import SideCategoryList
+from categories.side_category_list import SideCategoryList
 from database.notes_database_action import NotesDatabaseAction
 
 

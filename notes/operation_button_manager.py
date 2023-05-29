@@ -1,7 +1,7 @@
 from lib_imports import PALETTE, Button
-from note_creator import NoteCreator
-from note_display_window import NoteDisplayWindow
-from note_deletion import NoteDeletion
+from notes.note_creator import NoteCreator
+from notes.note_display_window import NoteDisplayWindow
+from notes.note_deletion import NoteDeletion
 
 
 class OperationButtonManager:
