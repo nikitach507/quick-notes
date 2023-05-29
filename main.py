@@ -42,6 +42,7 @@ class QuickNotesApp:
         # Creating a side list of categories
         self.side_listbox_categories.create_side_category_list()
 
+        # Creating buttons for category management
         self.actions_of_category_buttons.create_category_buttons()
 
 

@@ -202,7 +202,16 @@ class NotesDatabaseAction:
             db_connector.close()
 
     @staticmethod
-    def select_last_note(table_name):
+    def select_last_note(table_name: str):
+        """
+        Retrieves the ID of the last note in the specified table.
+
+        Args:
+            table_name (str): The name of the table.
+
+        Returns:
+            int: The ID of the last note.
+        """
         db_connector = DatabaseConnector()
         connection = db_connector.connect()
         try:

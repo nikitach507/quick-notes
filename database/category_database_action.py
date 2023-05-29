@@ -74,7 +74,7 @@ class CategoryDatabaseAction:
 
         Args:
             table_name (str): The name of the table containing the category.
-            name_cat_now (str): The name of the category to delete.
+            name_cat_to_delete (str): The name of the category to delete.
         """
         delete_query = "DELETE FROM `%s` WHERE name_cat = %%s;" % table_name
         params = (name_cat_to_delete,)
@@ -138,5 +138,32 @@ class CategoryDatabaseAction:
                 rows = cursor.fetchall()
                 all_cat_list = [row["name_cat"] for row in rows]
                 return all_cat_list
+        finally:
+            db_connector.close()
+
+    @staticmethod
+    def select_number_characters(table_name: str, column_name: str):
+        """
+        Retrieves the maximum character length of a specific column in the specified table.
+
+        Args:
+            table_name (str): The name of the table containing the column.
+            column_name (str): The name of the column to retrieve the character length for.
+
+        Returns:
+            int: The maximum character length of the specified column.
+        """
+        db_connector = DatabaseConnector()
+        connection = db_connector.connect()
+        try:
+            with connection.cursor() as cursor:
+                select_all_info = (
+                        "SELECT character_maximum_length "
+                        "FROM information_schema.columns "
+                        "WHERE table_name='%s' and column_name=%%s;" % table_name
+                )
+                cursor.execute(select_all_info, column_name)
+                row = cursor.fetchall()
+                return row[0]["CHARACTER_MAXIMUM_LENGTH"]
         finally:
             db_connector.close()

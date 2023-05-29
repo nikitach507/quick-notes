@@ -120,7 +120,7 @@ class NoteInformation:
         )
         supplementary_frame.pack(side="right", expand=True, padx=2, pady=5, anchor="nw")
 
-        back_comm = lambda : self.side_object.create_side_category_list(self.info_note[0]["note_category"])
+        back_comm = lambda: self.side_object.create_side_category_list(self.info_note[0]["note_category"])
         Button(supplementary_frame, text="Back",
                bg=PALETTE["secondary"]["1color"],
                fg=PALETTE["text"]["1color"],

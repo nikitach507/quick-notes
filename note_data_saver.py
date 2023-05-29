@@ -1,5 +1,5 @@
 from database.notes_database_action import NotesDatabaseAction
-from lib_imports import Literal, Optional, Text, messagebox
+from lib_imports import Text, messagebox
 
 
 class NoteDataSaver:
@@ -29,16 +29,23 @@ class NoteDataSaver:
             for the name.
             allowed_characters_desc (int): The maximum number of characters allowed
             for the description.
+            note_information_object: The NoteInformation object.
+
+        Returns:
+            bool: True if the save was successful, False otherwise.
         """
         validate_input_length = (
                 len(save_name_form.get("1.0", "end-1c")) <= allowed_characters_name
-                and len(save_desc_form.get("1.0", "end-1c")) <= allowed_characters_desc)
+                and len(save_desc_form.get("1.0", "end-1c")) <= allowed_characters_desc
+        )
 
         if validate_input_length:
             if NoteDataSaver.presence_check_necessary_data(
-                    save_name_form, current_category):
+                    save_name_form, current_category
+            ):
                 get_input_data = NoteDataSaver._get_input_data(
-                    nested_data, current_category, "save")
+                    nested_data, current_category, "save"
+                )
                 note = NotesDatabaseAction(
                     get_input_data["note_name"],
                     get_input_data["note_description"],
@@ -55,6 +62,7 @@ class NoteDataSaver:
                 allowed_characters_name,
                 allowed_characters_desc,
             )
+            return False
 
     @staticmethod
     def updating_received_data(
@@ -66,15 +74,35 @@ class NoteDataSaver:
             allowed_characters_desc: int,
             note_id: int,
     ):
+        """
+        Handles the action of updating data in the database.
+
+        Args:
+            save_name_form (tkinter.Text): The form field for the name of the note.
+            save_desc_form (tkinter.Text): The form field for the description of the note.
+            current_category (str): The selected category for the note.
+            nested_data (dict): Nested data structure containing additional data.
+            allowed_characters_name (int): The maximum number of characters allowed
+                for the name.
+            allowed_characters_desc (int): The maximum number of characters allowed
+                for the description.
+            note_id (int): The ID of the note to update.
+
+        Returns:
+            bool: True if the update was successful, False otherwise.
+        """
         validate_input_length = (
                 len(save_name_form.get("1.0", "end-1c")) <= allowed_characters_name
-                and len(save_desc_form.get("1.0", "end-1c")) <= allowed_characters_desc)
+                and len(save_desc_form.get("1.0", "end-1c")) <= allowed_characters_desc
+        )
 
         if validate_input_length:
             if NoteDataSaver.presence_check_necessary_data(
-                    save_name_form, current_category):
+                    save_name_form, current_category
+            ):
                 get_input_data = NoteDataSaver._get_input_data(
-                    nested_data, current_category, "update")
+                    nested_data, current_category, "update"
+                )
                 note = NotesDatabaseAction(
                     get_input_data["note_name"],
                     get_input_data["note_description"],
@@ -89,7 +117,8 @@ class NoteDataSaver:
                 allowed_characters_name,
                 allowed_characters_desc,
             )
-            
+            return False
+
     @staticmethod
     def presence_check_necessary_data(save_name_form: Text, name_category: str):
         """
@@ -103,7 +132,10 @@ class NoteDataSaver:
             bool: True if both name and category are present, False otherwise.
         """
         # Function to check the note title and category
-        if len(save_name_form.get("1.0", "end-1c")) == 0 or name_category in ("", "All notes"):
+        if len(save_name_form.get("1.0", "end-1c")) == 0 or name_category in (
+                "",
+                "All notes",
+        ):
             messagebox.showerror(
                 "Error",
                 "The main condition for creating a note is to write "
