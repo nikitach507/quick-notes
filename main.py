@@ -1,7 +1,10 @@
-from lib_imports import PALETTE, Frame, Tk
+from lib_imports import PALETTE, Frame, Tk, Label
 from notes.operation_button_manager import OperationButtonManager
 from categories.side_category_list import SideCategoryList
 from categories.category_button_manager import CategoryButtonManager
+
+from user_authentication import AuthenticationUser
+from PIL import ImageTk, Image
 
 
 class QuickNotesApp:
@@ -21,29 +24,35 @@ class QuickNotesApp:
         self.upper_window = upper_area
         self.side_window = side_area
         self.main_window = main_area
-        self.actions_of_category_buttons = CategoryButtonManager(
+        self.auth_interface = AuthenticationUser(
             self.side_window, self.main_window, self.upper_window
         )
-        self.actions_of_operation_buttons = OperationButtonManager(
-            self.main_window, self.upper_window, self.actions_of_category_buttons
-        )
-        self.side_listbox_categories = SideCategoryList(
-            self.main_window, self.upper_window, self.side_window
-        )
 
-    def create_app_interface(self):
+    def user_auth(self, after_reg=None):
+        self.auth_interface.user_auth(obj_main_app=self, after_reg=after_reg)
+
+    def create_app_interface(self, user_id):
         """
         Creates the application interface by creating buttons to control notes
         and a side list of categories.
         """
+        actions_of_category_buttons = CategoryButtonManager(
+            self.side_window, self.main_window, self.upper_window, user_id
+        )
+        actions_of_operation_buttons = OperationButtonManager(
+            self.main_window, self.upper_window, actions_of_category_buttons, user_id
+        )
+        side_listbox_categories = SideCategoryList(
+            self.main_window, self.upper_window, self.side_window, user_id
+        )
         # Creating buttons to control notes
-        self.actions_of_operation_buttons.create_operation_buttons()
+        actions_of_operation_buttons.create_operation_buttons()
 
         # Creating a side list of categories
-        self.side_listbox_categories.create_side_category_list()
+        side_listbox_categories.create_side_category_list()
 
         # Creating buttons for category management
-        self.actions_of_category_buttons.create_category_buttons()
+        actions_of_category_buttons.create_category_buttons()
 
 
 if __name__ == "__main__":
@@ -69,6 +78,14 @@ if __name__ == "__main__":
 
     app = QuickNotesApp(upper_frame, side_frame, main_frame)
 
-    app.create_app_interface()
+    image_tk = ImageTk.PhotoImage(Image.open("notes-logo.png").resize((200, 200)))
+    image_tk_t = ImageTk.PhotoImage(Image.open("notes_logo_tr.png").resize((200, 200)))
 
+    # Создание виджета Label и вставка изображения
+    label = Label(side_frame, image=image_tk, border=0, relief="flat")
+    label.place(x=-5, y=50)
+
+    win.iconphoto(True, image_tk_t)
+
+    app.user_auth()
     win.mainloop()
