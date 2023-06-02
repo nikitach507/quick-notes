@@ -23,7 +23,7 @@ class DatabaseConnector:
         """
         self.connection = None
 
-    def connect(self):
+    def connect(self, database_name):
         """
         Connect to the database and return the connection.
 
@@ -36,7 +36,7 @@ class DatabaseConnector:
                 port=3306,
                 user=USERNAME,
                 password=PASSWORD,
-                database=DATABASE,
+                database=database_name,
                 cursorclass=pymysql.cursors.DictCursor,
             )
             return self.connection
