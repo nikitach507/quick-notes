@@ -16,6 +16,7 @@ class NoteDataSaver:
             allowed_characters_name: int,
             allowed_characters_desc: int,
             note_information_object,
+            user_id
     ):
         """
         Handles the action of saving or updating data in the database.
@@ -51,7 +52,7 @@ class NoteDataSaver:
                     get_input_data["note_description"],
                     get_input_data["note_category"],
                 )
-                note.add_note("notes_info")
+                note.add_note("notes_info", user_id)
                 last_note_id = NotesDatabaseAction.select_last_note("notes_info")
                 note_information_object.open_note_information(last_note_id)
                 return True
@@ -73,6 +74,7 @@ class NoteDataSaver:
             allowed_characters_name: int,
             allowed_characters_desc: int,
             note_id: int,
+            user_id
     ):
         """
         Handles the action of updating data in the database.
@@ -108,7 +110,7 @@ class NoteDataSaver:
                     get_input_data["note_description"],
                     get_input_data["note_category"],
                 )
-                note.edit_note(table_name="notes_info", note_id=note_id)
+                note.edit_note(table_name="notes_info", user_id=user_id, note_id=note_id)
                 return True
         else:
             NoteDataSaver._check_number_of_characters(

@@ -19,7 +19,7 @@ class CategoryCreator:
             cls.__instance = super(CategoryCreator, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, side_window):
+    def __init__(self, main_window, operation_buttons_window, side_window, user_id):
         """
         Initializes the CategoryCreator class.
 
@@ -31,8 +31,9 @@ class CategoryCreator:
         self.side_frame = side_window
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
+        self.user_id = user_id
         self.side_listbox_categories = SideCategoryList(
-            self.main_frame, self.operation_buttons_frame, self.side_frame
+            self.main_frame, self.operation_buttons_frame, self.side_frame, self.user_id
         )
         self.input_cat = None
         self.error_message = None
@@ -116,7 +117,7 @@ class CategoryCreator:
             current_input (str): The entered category name.
         """
         if self.check_input_data(window, current_input):
-            CategoryDatabaseAction().add_category("note_category", current_input)
+            CategoryDatabaseAction().add_category("note_category", self.user_id, current_input)
             self.close_window_after_adding(window, current_input)
 
     def check_input_data(self, window: Toplevel, current_input: str):
@@ -134,7 +135,7 @@ class CategoryCreator:
             "note_category", "name_cat"
         )
         all_database_categories = CategoryDatabaseAction.all_categories_list(
-            "note_category"
+            "note_category", self.user_id
         )
 
         if len(current_input) > allowed_characters or len(current_input) < 1:

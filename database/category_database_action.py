@@ -24,7 +24,7 @@ class CategoryDatabaseAction:
             Defaults to None.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 if params:
@@ -35,7 +35,7 @@ class CategoryDatabaseAction:
         finally:
             db_connector.close()
 
-    def add_category(self, table_name: str, name_cat: str):
+    def add_category(self, table_name: str, user_id, name_cat: str):
         """
         Add a category to the specified table.
 
@@ -43,14 +43,14 @@ class CategoryDatabaseAction:
             table_name (str): The name of the table to add the category to.
             name_cat (str): The name of the category.
         """
-        insert_query = "INSERT INTO `%s` (name_cat) VALUES (%%s);" % table_name
-        params = (name_cat,)
+        insert_query = "INSERT INTO `%s` (user_id, name_cat) VALUES (%%s, %%s);" % table_name
+        params = (user_id, name_cat)
         self._execute_query(insert_query, params)
         print("Adding a category was successful")
         print("#" * 20)
 
     @staticmethod
-    def edit_category(table_name: str, name_cat_now: str, name_cat_after: str):
+    def edit_category(table_name: str, user_id, name_cat_now: str, name_cat_after: str):
         """
         Edit a category in the specified table.
 
@@ -60,15 +60,15 @@ class CategoryDatabaseAction:
             name_cat_after (str): The new name of the category.
         """
         update_query = (
-                "UPDATE `%s` SET name_cat = %%s WHERE name_cat = %%s;" % table_name
+                "UPDATE `%s` SET name_cat = %%s WHERE user_id=%%s AND name_cat = %%s;" % table_name
         )
-        params = (name_cat_after, name_cat_now)
+        params = (name_cat_after, user_id, name_cat_now)
         CategoryDatabaseAction._execute_query(update_query, params)
         print("Editing the category was successful")
         print("#" * 20)
 
     @staticmethod
-    def delete_category(table_name: str, name_cat_to_delete: str):
+    def delete_category(table_name: str, user_id, name_cat_to_delete: str):
         """
         Delete a category from the specified table.
 
@@ -76,8 +76,8 @@ class CategoryDatabaseAction:
             table_name (str): The name of the table containing the category.
             name_cat_to_delete (str): The name of the category to delete.
         """
-        delete_query = "DELETE FROM `%s` WHERE name_cat = %%s;" % table_name
-        params = (name_cat_to_delete,)
+        delete_query = "DELETE FROM `%s` WHERE user_id = %%s AND name_cat = %%s;" % table_name
+        params = (user_id, name_cat_to_delete)
         CategoryDatabaseAction._execute_query(delete_query, params)
         print("Deleting the category was successful")
         print("#" * 20)
@@ -104,7 +104,7 @@ class CategoryDatabaseAction:
             table_name (str): The name of the table containing the categories.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 select_all_rows = "SELECT name_cat FROM `%s`;" % table_name
@@ -118,7 +118,7 @@ class CategoryDatabaseAction:
             db_connector.close()
 
     @staticmethod
-    def all_categories_list(table_name: str):
+    def all_categories_list(table_name: str, user_id):
         """
         Retrieve a list of all categories from the specified table.
 
@@ -129,11 +129,11 @@ class CategoryDatabaseAction:
             list: A list of all categories.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
-                select_all_rows = "SELECT name_cat FROM `%s`;" % table_name
-                cursor.execute(select_all_rows)
+                select_all_rows = "SELECT name_cat FROM `%s` WHERE user_id = %%s;" % table_name
+                cursor.execute(select_all_rows, (user_id, ))
 
                 rows = cursor.fetchall()
                 all_cat_list = [row["name_cat"] for row in rows]
@@ -154,7 +154,7 @@ class CategoryDatabaseAction:
             int: The maximum character length of the specified column.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 select_all_info = (

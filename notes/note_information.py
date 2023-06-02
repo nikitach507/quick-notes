@@ -19,7 +19,7 @@ class NoteInformation:
             cls.__instance = super(NoteInformation, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, side_object):
+    def __init__(self, main_window, operation_buttons_window, side_object, user_id):
         """
         Initializes the OperationButtonManager class.
 
@@ -31,6 +31,7 @@ class NoteInformation:
         self.operation_buttons_frame = operation_buttons_window
         self.main_frame = main_window
         self.side_object = side_object
+        self.user_id = user_id
         self.nested_data = {}
         self.name_text_area = None
         self.data_note_frame = None
@@ -50,7 +51,7 @@ class NoteInformation:
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        self.info_note = NotesDatabaseAction.select_note("notes_info", note_id)
+        self.info_note = NotesDatabaseAction.select_note("notes_info", self.user_id, note_id)
 
         self._draw_data_note()
 
@@ -173,6 +174,7 @@ class NoteInformation:
                 number_allowed_characters_name,
                 number_allowed_characters_desc,
                 note_id,
+                self.user_id
             )
             else None
         )

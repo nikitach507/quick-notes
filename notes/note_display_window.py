@@ -21,14 +21,14 @@ class NoteDisplayWindow:
     def __init__(self):
         self.label = None
 
-    def create_new_window(self, note_id: int):
+    def create_new_window(self, user_id, note_id: int):
         """
         Initializes a new window for the note.
 
         Args:
             note_id (int): The id of the note to display.
         """
-        info_note = NotesDatabaseAction.select_note("notes_info", note_id)
+        info_note = NotesDatabaseAction.select_note("notes_info", user_id, note_id)
         note_window = Toplevel()
         note_window.title(f"{info_note[0]['note_name']}")
         note_window_width, note_window_height = 415, 275

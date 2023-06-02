@@ -21,7 +21,7 @@ class SideCategoryList:
             cls.__instance = super(SideCategoryList, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, side_window):
+    def __init__(self, main_window, operation_buttons_window, side_window, user_id):
         """
         Initializes the SideCategoryList class.
 
@@ -34,14 +34,16 @@ class SideCategoryList:
         self.side_frame = side_window
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
+        self.user_id = user_id
         self.actions_of_operation_buttons = OperationButtonManager(
-            self.main_frame, self.operation_buttons_frame, self,
+            self.main_frame, self.operation_buttons_frame, self, self.user_id
         )
         self.list_notes = NoteListViewer(
             self.main_frame,
             self.operation_buttons_frame,
             self.actions_of_operation_buttons,
             self,
+            self.user_id
         )
         self.side_listbox_categories = None
         self.side_listbox_active_category = None
@@ -91,7 +93,7 @@ class SideCategoryList:
         Adds the categories to the side listbox.
         """
         all_database_categories = CategoryDatabaseAction.all_categories_list(
-            "note_category")
+            "note_category", self.user_id)
         all_database_categories.insert(0, "All notes")
 
         # Add the resulting categories to the area

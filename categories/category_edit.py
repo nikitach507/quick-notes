@@ -20,7 +20,7 @@ class CategoryEdit:
             cls.__instance = super(CategoryEdit, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, side_window):
+    def __init__(self, main_window, operation_buttons_window, side_window, user_id):
         """
         Initializes the CategoryEdit class.
 
@@ -32,8 +32,9 @@ class CategoryEdit:
         self.side_frame = side_window
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
+        self.user_id = user_id
         self.side_listbox_categories = SideCategoryList(
-            self.main_frame, self.operation_buttons_frame, self.side_frame
+            self.main_frame, self.operation_buttons_frame, self.side_frame, self.user_id
         )
         self.error_message = None
         self.input_category = None
@@ -124,11 +125,13 @@ class CategoryEdit:
         if self.check_input_data(window, current_input):
             CategoryDatabaseAction().edit_category(
                 "note_category",
+                self.user_id,
                 self.side_listbox_categories.side_listbox_active_category,
                 current_input,
             )
             NotesDatabaseAction.edit_category_in_note(
                 "notes_info",
+                self.user_id,
                 self.side_listbox_categories.side_listbox_active_category,
                 current_input,
             )
@@ -149,7 +152,7 @@ class CategoryEdit:
             "note_category", "name_cat"
         )
         all_database_categories = CategoryDatabaseAction.all_categories_list(
-            "note_category"
+            "note_category", self.user_id
         )
 
         if len(current_input) > allowed_characters or len(current_input) < 1:

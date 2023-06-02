@@ -20,7 +20,7 @@ class CategoryDelete:
             cls.__instance = super(CategoryDelete, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, side_window):
+    def __init__(self, main_window, operation_buttons_window, side_window, user_id):
         """
         Initializes the CategoryDelete class.
 
@@ -32,8 +32,9 @@ class CategoryDelete:
         self.side_frame = side_window
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
+        self.user_id = user_id
         self.side_listbox_categories = SideCategoryList(
-            self.main_frame, self.operation_buttons_frame, self.side_frame
+            self.main_frame, self.operation_buttons_frame, self.side_frame, self.user_id
         )
 
     def create_message_delete_category(self):
@@ -51,10 +52,12 @@ class CategoryDelete:
             if answer:
                 CategoryDatabaseAction.delete_category(
                     "note_category",
+                    self.user_id,
                     self.side_listbox_categories.side_listbox_active_category,
                 )
                 NotesDatabaseAction.delete_all_note_in_category(
                     "notes_info",
+                    self.user_id,
                     self.side_listbox_categories.side_listbox_active_category,
                 )
             self.side_listbox_categories.create_side_category_list()

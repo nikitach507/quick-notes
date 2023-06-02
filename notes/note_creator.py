@@ -21,7 +21,7 @@ class NoteCreator:
             cls.__instance = super(NoteCreator, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_window, side_object):
+    def __init__(self, main_window, operation_window, side_object, user_id):
         """
         Initializes the NoteCreator class.
 
@@ -31,8 +31,9 @@ class NoteCreator:
         self.main_frame = main_window
         self.operation_buttons_frame = operation_window
         self.side_object = side_object
+        self.user_id = user_id
         self.note_information_obj = NoteInformation(
-            self.main_frame, self.operation_buttons_frame, self.side_object
+            self.main_frame, self.operation_buttons_frame, self.side_object, self.user_id
         )
         self.selected_category = ""
         self.active_item = 0
@@ -196,6 +197,7 @@ class NoteCreator:
             allowed_characters_name=number_allowed_characters_name,
             allowed_characters_desc=number_allowed_characters_desc,
             note_information_object=self.note_information_obj,
+            user_id=self.user_id
         )
         self.selected_category = ""
 
@@ -268,7 +270,7 @@ class NoteCreator:
         """
         # Getting all categories into a list from the database
         all_database_categories = CategoryDatabaseAction.all_categories_list(
-            "note_category"
+            "note_category", self.user_id
         )
         all_database_categories.insert(0, "")
 

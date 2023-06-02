@@ -20,7 +20,7 @@ class CategoryButtonManager:
             cls.__instance = super(CategoryButtonManager, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, side_window, main_window, operation_buttons_window):
+    def __init__(self, side_window, main_window, operation_buttons_window, user_id):
         """
         Initializes the CategoryButtonManager class.
 
@@ -32,15 +32,16 @@ class CategoryButtonManager:
         self.side_frame = side_window
         self.main_frame = main_window
         self.operation_buttons_frame = operation_buttons_window
+        self.user_id = user_id
 
         self.category_button_add = CategoryCreator(
-            self.main_frame, self.operation_buttons_frame, self.side_frame
+            self.main_frame, self.operation_buttons_frame, self.side_frame, self.user_id
         )
         self.cat_setup = CategoryEdit(
-            self.main_frame, self.operation_buttons_frame, self.side_frame
+            self.main_frame, self.operation_buttons_frame, self.side_frame, self.user_id
         )
         self.cat_delete = CategoryDelete(
-            self.main_frame, self.operation_buttons_frame, self.side_frame
+            self.main_frame, self.operation_buttons_frame, self.side_frame, self.user_id
         )
 
     def create_category_buttons(self):

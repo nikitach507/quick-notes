@@ -30,7 +30,7 @@ class NotesDatabaseAction:
             params (tuple, optional): The parameters to be used in the query. Defaults to None.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 if params:
@@ -41,7 +41,7 @@ class NotesDatabaseAction:
         finally:
             db_connector.close()
 
-    def add_note(self, table_name: str):
+    def add_note(self, table_name: str, user_id):
         """
         Adds a note to the specified table in the database.
 
@@ -49,11 +49,11 @@ class NotesDatabaseAction:
             table_name (str): The name of the table to add the note to.
         """
         insert_query = (
-                "INSERT INTO `%s` (note_name, note_description, note_category) "
-                "VALUES (%%s, %%s, %%s);"
+                "INSERT INTO `%s` (user_id, note_name, note_description, note_category) "
+                "VALUES (%%s, %%s, %%s, %%s);"
                 % table_name
         )
-        params = (self.note_name, self.note_description, self.note_category)
+        params = (user_id, self.note_name, self.note_description, self.note_category)
         self._execute_query(insert_query, params)
         print("Adding a note was successful")
         print("#" * 20)
@@ -61,6 +61,7 @@ class NotesDatabaseAction:
     def edit_note(
             self,
             table_name: str,
+            user_id,
             note_id: int,
             new_name: Optional[str] = None,
             new_desc: Optional[str] = None,
@@ -84,24 +85,24 @@ class NotesDatabaseAction:
             new_category = self.note_category
         update_query = (
                 "UPDATE `%s` SET note_name = %%s, note_description = %%s, note_category = %%s "
-                "WHERE id = %%s;"
+                "WHERE user_id = %%s AND id = %%s;"
                 % table_name
         )
-        params = (new_name, new_desc, new_category, note_id)
+        params = (new_name, new_desc, new_category, user_id, note_id)
         self._execute_query(update_query, params)
         print("Editing the note was successful")
         print("#" * 20)
 
     @staticmethod
-    def edit_category_in_note(table_name: str, name_cat_now: str, name_cat_after: str):
-        edit_query = "UPDATE `%s` SET note_category = %%s WHERE note_category = %%s;" % table_name
-        params = (name_cat_after, name_cat_now)
+    def edit_category_in_note(table_name: str, user_id, name_cat_now: str, name_cat_after: str):
+        edit_query = "UPDATE `%s` SET note_category = %%s WHERE user_id = %%s AND note_category = %%s;" % table_name
+        params = (name_cat_after, user_id, name_cat_now)
         NotesDatabaseAction._execute_query(edit_query, params)
         print("Editing the note was successful")
         print("#" * 20)
 
     @staticmethod
-    def delete_note(table_name: str, note_id: int):
+    def delete_note(table_name: str, user_id, note_id: int):
         """
         Deletes a note from the specified table in the database.
 
@@ -109,23 +110,23 @@ class NotesDatabaseAction:
             table_name (str): The name of the table containing the note.
             note_id (int): The ID of the note to delete.
         """
-        delete_query = "DELETE FROM `%s` WHERE id = %%s;" % table_name
-        params = (note_id,)
+        delete_query = "DELETE FROM `%s` WHERE user_id = %%s AND id = %%s;" % table_name
+        params = (user_id, note_id)
         NotesDatabaseAction._execute_query(delete_query, params)
         print("Deleting the note was successful")
         print("#" * 20)
 
     @staticmethod
-    def delete_all_note_in_category(table_name: str, name_cat_to_delete: str):
-        delete_query = "DELETE FROM `%s` WHERE note_category = %%s;" % table_name
-        params = (name_cat_to_delete,)
+    def delete_all_note_in_category(table_name: str, user_id, name_cat_to_delete: str):
+        delete_query = "DELETE FROM `%s` WHERE user_id = %%s AND note_category = %%s;" % table_name
+        params = (user_id, name_cat_to_delete)
         NotesDatabaseAction._execute_query(delete_query, params)
         print(f"Deleting the all note from the category '{name_cat_to_delete}' was successful")
         print("#" * 20)
 
     @staticmethod
     def select_all_notes(
-            table_name: str, category: str,
+            table_name: str, user_id, category: str,
             sorting: Literal["newest", "oldest", "atoz", "ztoa"]
     ):
         """
@@ -153,20 +154,20 @@ class NotesDatabaseAction:
             )
 
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 if category != "All notes":
                     select_all_rows = (
-                            "SELECT * FROM `%s` WHERE note_category = %%s" % table_name
+                            "SELECT * FROM `%s` WHERE user_id = %%s AND note_category = %%s" % table_name
                             + type_sorting[sorting]
                     )
-                    cursor.execute(select_all_rows, category)
+                    cursor.execute(select_all_rows, (user_id, category))
                 else:
                     select_all_rows = (
-                            "SELECT * FROM `%s` " % table_name + type_sorting[sorting]
+                            "SELECT * FROM `%s` WHERE user_id = %%s" % table_name + " " + type_sorting[sorting]
                     )
-                    cursor.execute(select_all_rows)
+                    cursor.execute(select_all_rows, (user_id,))
 
                 all_notes_list = []
 
@@ -179,7 +180,7 @@ class NotesDatabaseAction:
             db_connector.close()
 
     @staticmethod
-    def select_note(table_name: str, note_id: int):
+    def select_note(table_name: str, user_id, note_id: int):
         """
         Retrieves a specific note from the specified table in the database.
 
@@ -191,11 +192,11 @@ class NotesDatabaseAction:
             dict: The information of the retrieved note.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
-                select_all_info = "SELECT * FROM `%s` WHERE id = %%s" % table_name
-                cursor.execute(select_all_info, note_id)
+                select_all_info = "SELECT * FROM `%s` WHERE user_id = %%s AND id = %%s" % table_name
+                cursor.execute(select_all_info, (user_id, note_id))
                 all_info_note = cursor.fetchall()
                 return all_info_note
         finally:
@@ -213,7 +214,7 @@ class NotesDatabaseAction:
             int: The ID of the last note.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 select_all_info = "SELECT * FROM `%s` " % table_name
@@ -242,7 +243,7 @@ class NotesDatabaseAction:
             int: The maximum character length of the specified column.
         """
         db_connector = DatabaseConnector()
-        connection = db_connector.connect()
+        connection = db_connector.connect("notes")
         try:
             with connection.cursor() as cursor:
                 select_all_info = (

@@ -1,6 +1,6 @@
 from database.notes_database_action import NotesDatabaseAction
 from lib_imports import (PALETTE, Canvas, Combobox, Frame, Label,
-                         Optional, Scrollbar, messagebox, textwrap)
+                         Optional, Scrollbar, textwrap)
 from notes.note_information import NoteInformation
 
 
@@ -19,7 +19,7 @@ class NoteListViewer:
             cls.__instance = super(NoteListViewer, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, operation_object, side_object):
+    def __init__(self, main_window, operation_buttons_window, operation_object, side_object, user_id):
         """
         Initializes the OperationButtonManager class.
 
@@ -33,8 +33,9 @@ class NoteListViewer:
         self.operation_buttons_frame = operation_buttons_window
         self.operation_object = operation_object
         self.side_object = side_object
+        self.user_id = user_id
         self.complete_note_info = NoteInformation(
-            self.main_frame, self.operation_buttons_frame, self.side_object)
+            self.main_frame, self.operation_buttons_frame, self.side_object, self.user_id)
         self.note_sorting = "newest"
         self.frame_to_display = None
         self.current_note_category = None
@@ -138,6 +139,7 @@ class NoteListViewer:
         """
         all_database_notes = NotesDatabaseAction.select_all_notes(
             table_name="notes_info",
+            user_id=self.user_id,
             category=self.current_note_category,
             sorting=self.note_sorting)
 

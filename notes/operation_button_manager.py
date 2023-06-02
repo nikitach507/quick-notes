@@ -20,7 +20,7 @@ class OperationButtonManager:
             cls.__instance = super(OperationButtonManager, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, main_window, operation_buttons_window, cat_side_obj):
+    def __init__(self, main_window, operation_buttons_window, cat_side_obj, user_id):
         """
         Initializes the OperationButtonManager class.
 
@@ -32,7 +32,9 @@ class OperationButtonManager:
         self.operation_buttons_frame = operation_buttons_window
         self.main_frame = main_window
         self.cat_side_obj = cat_side_obj
-        self.operation_button_add = NoteCreator(self.main_frame, self.operation_buttons_frame, self.cat_side_obj)
+        self.user_id = user_id
+        self.operation_button_add = NoteCreator(self.main_frame, self.operation_buttons_frame, self.cat_side_obj,
+                                                self.user_id)
         self.pop_up_buttons = {}
         self.note_operation_buttons = None
         self.x_note_buttons = None
@@ -41,6 +43,9 @@ class OperationButtonManager:
         """
         Creates and draws operating buttons on the frame for the operation buttons.
         """
+        for widget in self.operation_buttons_frame.winfo_children():
+            widget.destroy()
+
         self.note_operation_buttons = {"create new note": self.switch_add_note}
         self.x_note_buttons = 0
         for caption, button_function in self.note_operation_buttons.items():
@@ -103,12 +108,12 @@ class OperationButtonManager:
         self.destroy_dynamic_buttons()
 
         delete_note_lambda = lambda: (
-            NoteDeletion.delete_note_button(note_id),
+            NoteDeletion.delete_note_button(self.user_id, note_id),
             self.cat_side_obj.create_side_category_list(note_category=note_category),
             self.destroy_dynamic_buttons())
 
         note_window = NoteDisplayWindow()
-        window_note_lambda = lambda: note_window.create_new_window(note_id)
+        window_note_lambda = lambda: note_window.create_new_window(self.user_id, note_id)
 
         self.x_note_buttons = 130
         self.draw_operating_button(
